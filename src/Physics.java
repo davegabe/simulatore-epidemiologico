@@ -3,9 +3,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Physics {
-    int x1, x2, y1, y2;
-    Manager manager;
-    QuadTree quadTree;
+    private int x1, x2, y1, y2;
+    private Manager manager;
+    private QuadTree quadTree;
+    private int collisionCounter=0;
 
     Physics(Manager manager, int x1, int x2, int y1, int y2) {
         this.manager = manager;
@@ -32,6 +33,7 @@ public class Physics {
         checkWalls();
         moveBackPlayers();
         movePlayers();
+
     }
 
     private void movePlayers() {
@@ -96,6 +98,7 @@ public class Physics {
                 alreadyCalculated.put(otherPeople.get(i), person);
                 person.meeting(otherPeople.get(i));
                 otherPeople.get(i).meeting(person);
+                collisionCounter+=2;
 
                 int tempSpeedX = otherPeople.get(i).dir.speedX;
                 int tempSpeedY = otherPeople.get(i).dir.speedY;
@@ -141,6 +144,12 @@ public class Physics {
     private void moveBackPlayers() {
         for (int i = 0; i < manager.people.length; i++) {
             manager.people[i].moveBack();
+        }
+    }
+
+    private void anotherDay(){
+        if(collisionCounter/manager.people.length==manager.speed){
+            //manager.anotherDay();
         }
     }
 }

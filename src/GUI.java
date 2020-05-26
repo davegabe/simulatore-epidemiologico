@@ -18,14 +18,15 @@ public class GUI extends JPanel {
     private JTextField population_txtfield;
     private JTextField swab_txtfield;
     private JTextField meetings_txtfield;
-    private JTextField risorse_txtfield;
+    private JTextField resources_txtfield;
     private JSlider inf_slider;
     private JSlider let_slider;
     private JSlider sint_slider;
     private JSlider duration_slider;
     private JSlider fps_slider;
+    //private JOptionPane error_dialogue;
     private boolean once = false;
-    Manager manager;
+    private Manager manager;
 
 
     public GUI(Manager manager) {
@@ -56,12 +57,12 @@ public class GUI extends JPanel {
 
         // INSERIMENTO POPOLAZIONE FIELD
         population_txtfield = createTextField("Popolazione", left_p);
+        // INSERIMENTO RISORSE FIELD
+        resources_txtfield = createTextField("Risorse", left_p);
         // INSERIMENTO TAMPONE FIELD
         swab_txtfield = createTextField("Costo tampone", left_p);
         // INSERIMENTO INCONTRI FIELD
         meetings_txtfield = createTextField("Incontri", left_p);
-        // INSERIMENTO RISORSE FIELD
-        risorse_txtfield = createTextField("Risorse", left_p);
 
         //
         left_p.add(Box.createRigidArea(new Dimension(0, 120)));   // SPAZIO CHE DIVIDE SLIDER DA BOTTONI
@@ -80,7 +81,7 @@ public class GUI extends JPanel {
         population_txtfield.setDocument(new IntDocument(10));
         swab_txtfield.setDocument(new DoubleDocument(10));
         meetings_txtfield.setDocument(new DoubleDocument(10));
-        risorse_txtfield.setDocument(new IntDocument(10));
+        resources_txtfield.setDocument(new IntDocument(10));
     }
 
     private JTextField createTextField(String label, JPanel parentPanel) {
@@ -166,21 +167,22 @@ public class GUI extends JPanel {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 if (play.getText().equals("PLAY")) {
-                    fps_slider.setEnabled(true);
-                    if (fps_slider.getMaximum()-fps_slider.getValue()==0)
-                        manager.changeSpeed(1);
-                    else
-                        manager.changeSpeed(fps_slider.getMaximum()-fps_slider.getValue());
 
-                    play.setText("PAUSE");
+                    if (!once)              //if already started
+                        once = true;
+                    else
+                        return;
 
                     int population = 1;
                     float swab = 1;
-                    float meetings = 1;                                                                // prende meetings
+                    float meetings = 1;
+                    int resources = 1;// gets meetings
                     int infectivity = inf_slider.getValue();
                     int symptomaticity = sint_slider.getValue();
                     int letality = let_slider.getValue();
                     int duration = duration_slider.getValue();
+
+
 
                     if (!population_txtfield.getText().equals("")) {
                         if(Integer.parseInt(population_txtfield.getText())>=1)
@@ -194,15 +196,41 @@ public class GUI extends JPanel {
                         if(Float.parseFloat(meetings_txtfield.getText())>0)
                             meetings = Float.parseFloat(meetings_txtfield.getText());
                     }
+                    if (!resources_txtfield.getText().equals("")) {
+                        if(Integer.parseInt(resources_txtfield.getText())>=1)
+                            resources = Integer.parseInt(resources_txtfield.getText());
+                        if(resources >= 10*population*swab) {
+                            System.out.println(population);
+                            String error = "You must chose a lower value for 'Resources'!";
+                            JOptionPane.showMessageDialog(null, error);
+                            System.out.println(resources);
+                            once = false;
+                            //new ResourcesChecker();
+                        }
+                    }
 
-
-
-                    if (!once)              //if already started
-                        once = true;
-                    else
+                    if(resources < 10*population*swab) {
+                        play.setText("PAUSE");
+                        stop.setVisible(true);
+                    }
+                    else{
                         return;
+                    }
 
-                    stop.setVisible(true);
+                    fps_slider.setEnabled(true);
+                    if (fps_slider.getValue()==0)
+                        manager.changeSpeed(1000);
+                    else
+                        manager.changeSpeed(fps_slider.getValue()*1000);
+
+                    System.out.println("infectivity = " + infectivity);
+                    System.out.println("symptomaticity = " + symptomaticity);
+                    System.out.println("letality = " + letality);
+                    System.out.println("duration = " + duration);
+                    System.out.println("population = " + population);
+                    System.out.println("swabone = " + swab);
+                    System.out.println("meetings = " + meetings);
+                    System.out.println("resources = " + resources);
                 } else {
                     play.setText("PLAY");
                     manager.changeSpeed(-1);    //stop the timer

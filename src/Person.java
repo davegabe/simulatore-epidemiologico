@@ -10,7 +10,7 @@ public class Person {
     public int x;                                      //x, y -> person's position  in the space
     public int y;
     public Vector2 dir = new Vector2();
-    Manager manager;
+    private Manager manager;
     private HashMap contacts;
     private int prevX;
     private int prevY;

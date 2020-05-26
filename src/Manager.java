@@ -9,7 +9,7 @@ public class Manager {
     public TwoDPart twoDPart;
     private int resources;
     private float swabCost;
-    private float speed;
+    public float speed;
 
     public static void main(String[] args) {
         new Manager().initialize();
