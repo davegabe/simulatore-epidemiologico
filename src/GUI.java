@@ -171,14 +171,9 @@ public class GUI extends JPanel {
                         manager.changeSpeed(1);
                     else
                         manager.changeSpeed(fps_slider.getMaximum()-fps_slider.getValue());
+
                     play.setText("PAUSE");
 
-                    if (!once)              //if already started
-                        once = true;
-                    else
-                        return;
-
-                    stop.setVisible(true);
                     int population = 1;
                     float swab = 1;
                     float meetings = 1;                                                                // prende meetings
@@ -187,27 +182,27 @@ public class GUI extends JPanel {
                     int letality = let_slider.getValue();
                     int duration = duration_slider.getValue();
 
-
                     if (!population_txtfield.getText().equals("")) {
                         if(Integer.parseInt(population_txtfield.getText())>=1)
                             population = Integer.parseInt(population_txtfield.getText());
                     }                                                                                            // gets population
                     if (!swab_txtfield.getText().equals("")) {
                         if(Float.parseFloat(swab_txtfield.getText())>0)
-                        swab = Float.parseFloat(swab_txtfield.getText());
+                            swab = Float.parseFloat(swab_txtfield.getText());
                     }                                                                                            // gets swab
                     if (!meetings_txtfield.getText().equals("")){
                         if(Float.parseFloat(meetings_txtfield.getText())>0)
-                        meetings = Float.parseFloat(meetings_txtfield.getText());
+                            meetings = Float.parseFloat(meetings_txtfield.getText());
                     }
 
-                    System.out.println("infectivity = " + infectivity);
-                    System.out.println("symptomaticity = " + symptomaticity);
-                    System.out.println("letality = " + letality);
-                    System.out.println("duration = " + duration);
-                    System.out.println("population = " + population);
-                    System.out.println("swabone = " + swab);
-                    System.out.println("meetings = " + meetings);
+
+
+                    if (!once)              //if already started
+                        once = true;
+                    else
+                        return;
+
+                    stop.setVisible(true);
                 } else {
                     play.setText("PLAY");
                     manager.changeSpeed(-1);    //stop the timer
