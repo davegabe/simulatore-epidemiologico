@@ -50,7 +50,6 @@ public class QuadTree {
                 index = 3;
             }
         }
-
         return index;
     }
 

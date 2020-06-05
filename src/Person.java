@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Person {
@@ -6,7 +5,7 @@ public class Person {
     static final int r = 10;
     public Status condition = Status.green;
     public boolean hasVirus;
-    public boolean mobility;
+    public boolean mobility = true;
     public int x;                                      //x, y -> person's position  in the space
     public int y;
     public Vector2 dir = new Vector2();
@@ -25,6 +24,8 @@ public class Person {
     }
 
     public void move() {
+        if(!canMove())
+            return;
         prevX = x;
         prevY = y;
         x += dir.speedX;
@@ -32,20 +33,23 @@ public class Person {
     }
 
     public void moveBack() {
+        if(!canMove())
+            return;
         x = prevX;
         y = prevY;
     }
 
     public void meeting(Person other) {
-        if(condition==Status.blue || other.condition==Status.blue)
+        if(condition== Status.blue || other.condition== Status.blue)
             return;
         //contacts.put(manager.getDay(), contacts.getOrDefault(manager.getDay(), new ArrayList<Person>()));
-        if(other.condition==Status.yellow || other.condition==Status.red){
-            hasVirus = Math.random()*100<manager.infectivity; //rolling dice...
+        if(other.condition== Status.yellow || other.condition== Status.red){
+            if(!hasVirus)
+                hasVirus = Math.random()*100<manager.infectivity; //rolling dice...
         }
     }
 
-    public void dayEvent(){
+    public Status dayEvent(){
         if(hasVirus) {
             switch (condition) {
                 case green:
@@ -58,32 +62,30 @@ public class Person {
                     turningBlack();
                     break;
             }
+            infectedDays++;
         }
+        return condition;
     }
 
     private void turningYellow() {
-        if(infectedDays==1/6*manager.duration){
-            condition=Status.yellow;
-            if(Math.random()*100<manager.infectivity) { //rolling dice...
-                symptomsDay = (int) (Math.random() * 1 / 6 * manager.duration);
+        if(infectedDays==manager.duration/6){
+            condition= Status.yellow;
+            if(Math.random()*100<manager.symptomaticQuality) { //rolling dice...
+                symptomsDay = (int) (infectedDays+(Math.random() * 1 / 6 * manager.duration));
             } else {
                 symptomsDay=-1;
             }
         }
     }
 
-    private void turningBlue() {
-        condition = Status.blue;
-    }
-
     private void turningRed() {
-        if(infectedDays>=1/3*manager.duration){ //if the incubation time is over
+        if(infectedDays>=manager.duration/3){ //if the incubation time is over
             turningBlue();
         }
         if(infectedDays==symptomsDay) { //if today is the day
             condition = Status.red;
             if(Math.random()*100<manager.letality) { //rolling dice...
-                deathDay = (int) (Math.random() * (manager.duration-infectedDays));
+                deathDay = (int) (infectedDays + (Math.random() * (manager.duration-infectedDays)));
             } else {
                 deathDay=-1;
             }
@@ -91,12 +93,26 @@ public class Person {
     }
 
     private void turningBlack() {
-        if(infectedDays==manager.duration){ //if the sickness time is over
+        if(infectedDays>manager.duration){ //if the sickness time is over
             turningBlue();
         }
-        if(infectedDays==symptomsDay) { //if today is the day
-            condition=Status.black;
+        if(infectedDays==deathDay) { //if today is the day
+            condition= Status.black;
         }
+    }
+
+    private void turningBlue() {
+        condition = Status.blue;
+    }
+
+
+    public void forceIllness(){
+        hasVirus=true;
+        condition=Status.yellow;
+    }
+
+    public boolean canMove(){
+        return (mobility && condition!=Status.black);
     }
 }
 

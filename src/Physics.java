@@ -33,7 +33,7 @@ public class Physics {
         checkWalls();
         moveBackPlayers();
         movePlayers();
-
+        checkForDay();
     }
 
     private void movePlayers() {
@@ -61,8 +61,8 @@ public class Physics {
         }
     }
 
-
-    private void checkCollisionNotGoodButWorking() {
+    @Deprecated
+    private void checkCollisionQuadratic() {
         for (int i = 0; i < manager.people.length; i++) {
             //check with other players
             for (int j = i + 1; j < manager.people.length; j++) {
@@ -77,14 +77,6 @@ public class Physics {
                     manager.people[j].dir.speedY = manager.people[i].dir.speedY;
                     manager.people[i].dir.speedX = tempSpeedX;
                     manager.people[i].dir.speedY = tempSpeedY;
-
-                /*
-                while(distance<= Person.r*2){
-                    manager.people[j].move();
-                    manager.people[i].move();
-                    distance = Math.sqrt( Math.pow(manager.people[i].x - manager.people[j].x, 2) +Math.pow(manager.people[i].y- manager.people[j].y,2));
-                }
-                */
                 }
             }
         }
@@ -93,6 +85,7 @@ public class Physics {
     private void checkCollision(Person person, ArrayList<Person> otherPeople, HashMap alreadyCalculated) {
         for (int i = 0; i < otherPeople.size(); i++) {
             if(person==otherPeople.get(i) || alreadyCalculated.get(person)==otherPeople.get(i)) continue;
+            if(person.condition== Person.Status.black||otherPeople.get(i).condition== Person.Status.black) continue;
             double distance = Math.sqrt(Math.pow(person.x - otherPeople.get(i).x, 2) + Math.pow(person.y - otherPeople.get(i).y, 2));
             if (distance <= Person.r * 2) {
                 alreadyCalculated.put(otherPeople.get(i), person);
@@ -119,23 +112,11 @@ public class Physics {
                 Point right = new Point(manager.people[i].x + Person.r, manager.people[i].y);
                 if (manager.walls[j].contains(upper) || manager.walls[j].contains(bottom)) {
                     manager.people[i].dir.speedY *= -1;
-                    /*
-                    while(manager.walls[j].contains(upper)||manager.walls[j].contains(bottom)){
-                        manager.people[i].move();
-                        upper = new Point(manager.people[i].x, manager.people[i].y- Person.r);
-                        bottom = new Point(manager.people[i].x, manager.people[i].y+ Person.r);
-                    }
-                    */
+                    break;
                 }
                 if (manager.walls[j].contains(left) || manager.walls[j].contains(right)) {
                     manager.people[i].dir.speedX *= -1;
-                    /*
-                    while(manager.walls[j].contains(left)||manager.walls[j].contains(right)){
-                        manager.people[i].move();
-                        left = new Point(manager.people[i].x- Person.r, manager.people[i].y);
-                        right = new Point(manager.people[i].x+ Person.r, manager.people[i].y);
-                    }
-                    */
+                    break;
                 }
             }
         }
@@ -147,9 +128,10 @@ public class Physics {
         }
     }
 
-    private void anotherDay(){
-        if(collisionCounter/manager.people.length==manager.speed){
-            //manager.anotherDay();
+    private void checkForDay(){
+        if(collisionCounter/manager.people.length>=manager.meetings){
+            manager.anotherDay();
+            collisionCounter=0;
         }
     }
 }

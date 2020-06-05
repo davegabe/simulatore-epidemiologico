@@ -24,6 +24,10 @@ public class GUI extends JPanel {
     private JSlider sint_slider;
     private JSlider duration_slider;
     private JSlider fps_slider;
+    private JPanel center;
+    private JPanel left_p;
+    private JLabel counter;
+    private JPanel bar;
     //private JOptionPane error_dialogue;
     private boolean once = false;
     private Manager manager;
@@ -46,10 +50,12 @@ public class GUI extends JPanel {
 
         f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         f.setVisible(true);
+        f.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        System.out.print(manager.twoDPart.getSize());
     }
 
     private void createLeftPanel(JFrame f, Color color) {
-        JPanel left_p = new JPanel(); // this is the big left panel
+        left_p = new JPanel(); // this is the big left panel
         left_p.setBackground(color);         //set color of the panel
         left_p.setLayout(new BoxLayout(left_p, BoxLayout.Y_AXIS));
         f.add(left_p, BorderLayout.WEST);
@@ -74,14 +80,36 @@ public class GUI extends JPanel {
         JLabel imgLabel = new JLabel(new ImageIcon(img.getName()));
         left_p.add(imgLabel);*/
 
-        JLabel img = new JLabel("IMAGE GOES HERE");
+
+        left_p.add(createDaysCounter(left_p,manager.day));           // instead of days_value, we should put the manager's days counter
+        /*JLabel img = new JLabel("IMAGE GOES HERE");
         img.setFont(new Font("Times New Roman", Font.PLAIN, 25));
-        left_p.add(img);
+        left_p.add(img);*/
+        left_p.add(Box.createRigidArea(new Dimension(0,120)));
 
         population_txtfield.setDocument(new IntDocument(10));
         swab_txtfield.setDocument(new DoubleDocument(10));
         meetings_txtfield.setDocument(new DoubleDocument(10));
         resources_txtfield.setDocument(new IntDocument(10));
+    }
+
+    public void updateDayCounter(){
+        counter.setText(String.valueOf(manager.day));
+    }
+
+    private JPanel createDaysCounter(JPanel parentPanel, int days_value){
+        JPanel counter_p = new JPanel();
+        //counter_p.setBackground(blue);
+        counter_p.setLayout(new FlowLayout());
+        JLabel days = new JLabel("Days:");
+        counter = new JLabel(String.valueOf(days_value));
+        // whenever the meetings meet the velocity field, this should be upped by 1.
+
+        counter_p.add(days);
+        counter_p.add(counter);
+        parentPanel.add(counter_p);
+        return counter_p;
+
     }
 
     private JTextField createTextField(String label, JPanel parentPanel) {
@@ -106,7 +134,6 @@ public class GUI extends JPanel {
         c.insets = new Insets(8, 40, 0, 30);         // inserisce uno spazio tra gli elementi
         jPanel.add(jTextField, c);
         return jTextField;
-        // http://www.davismol.net/2014/12/18/java-swing-un-esempio-di-utilizzo-del-gridbaglayout-per-la-realizzazione-di-un-form/
     }
 
     private void createRightPanel(JFrame f, Color color) {
@@ -170,15 +197,22 @@ public class GUI extends JPanel {
 
                     if (!once)              //if already started
                         once = true;
-                    else
+                    else{
+                        fps_slider.setEnabled(true);
+                        if (fps_slider.getValue()==0)
+                            manager.changeSpeed(1000);
+                        else
+                            manager.changeSpeed(fps_slider.getValue()*10);
                         return;
+                    }
+
 
                     int population = 1;
                     float swab = 1;
                     float meetings = 1;
                     int resources = 1;// gets meetings
                     int infectivity = inf_slider.getValue();
-                    int symptomaticity = sint_slider.getValue();
+                    int symptomaticQuality = sint_slider.getValue();
                     int letality = let_slider.getValue();
                     int duration = duration_slider.getValue();
 
@@ -217,20 +251,21 @@ public class GUI extends JPanel {
                         return;
                     }
 
-                    fps_slider.setEnabled(true);
-                    if (fps_slider.getValue()==0)
-                        manager.changeSpeed(1000);
-                    else
-                        manager.changeSpeed(fps_slider.getValue()*1000);
-
                     System.out.println("infectivity = " + infectivity);
-                    System.out.println("symptomaticity = " + symptomaticity);
+                    System.out.println("symptomaticQuality = " + symptomaticQuality);
                     System.out.println("letality = " + letality);
                     System.out.println("duration = " + duration);
                     System.out.println("population = " + population);
                     System.out.println("swabone = " + swab);
                     System.out.println("meetings = " + meetings);
                     System.out.println("resources = " + resources);
+
+                    manager.initialize(population, duration, infectivity, symptomaticQuality, letality, swab, meetings, resources);
+                    fps_slider.setEnabled(true);
+                    if (fps_slider.getMaximum()-fps_slider.getValue()==0)
+                        manager.changeSpeed(1);
+                    else
+                        manager.changeSpeed(fps_slider.getMaximum()-fps_slider.getValue());
                 } else {
                     play.setText("PLAY");
                     manager.changeSpeed(-1);    //stop the timer
@@ -243,8 +278,10 @@ public class GUI extends JPanel {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 play.setText("PLAY");
+                manager.destroy();
                 stop.setVisible(false);
                 once = false;
+                manager.day=0;
             }
         });
 
@@ -285,7 +322,7 @@ public class GUI extends JPanel {
 
         // CREATE CENTER LAYOUT AS BORDERLAYOUT
 
-        JPanel center = new JPanel();
+        center = new JPanel();
         center.setLayout(new BorderLayout());
         center.setBackground(background);
         f.add(center, BorderLayout.CENTER);
@@ -296,28 +333,36 @@ public class GUI extends JPanel {
 
 
         // SIZE CHANGING BAR
+        createBar(green, green, yellow, red, blue, black);
+    }
 
-        JPanel bar = new JPanel();
-        bar.setBackground(green);
+    public void recreateBar(){
+        center.remove(bar);
+        createBar(green, green, yellow, red, blue, black);
+    }
+
+    private void createBar(Color background, Color healthy, Color asymptomatic, Color symptomatic, Color healed, Color dead){
+        bar = new JPanel();
+        bar.setBackground(background);
         bar.setLayout(new GridBagLayout());
         GridBagConstraints s = new GridBagConstraints();
         center.add(bar, BorderLayout.PAGE_END);
 
 
         JLabel green_bar = new JLabel();
-        green_bar.setText(String.valueOf(manager.twoDPart.num_green));
+        green_bar.setText(String.valueOf(manager.num_green));
         green_bar.setOpaque(true);
         green_bar.setBackground(healthy);
 
         s.fill = GridBagConstraints.HORIZONTAL;
         s.gridy = 0;
         s.gridx = 0;
-        s.weightx = manager.twoDPart.num_green;
+        s.weightx = manager.num_green;
         bar.add(green_bar, s);
 
 
         JLabel yellow_bar = new JLabel();
-        yellow_bar.setText(String.valueOf(manager.twoDPart.num_yellow));
+        yellow_bar.setText(String.valueOf(manager.num_yellow));
         yellow_bar.setOpaque(true);
         yellow_bar.setBackground(asymptomatic);
 
@@ -325,12 +370,12 @@ public class GUI extends JPanel {
         s.fill = GridBagConstraints.HORIZONTAL;
         s.gridx = 1;
         s.gridy = 0;
-        s.weightx = manager.twoDPart.num_yellow;
+        s.weightx = manager.num_yellow;
         bar.add(yellow_bar, s);
 
 
         JLabel red_bar = new JLabel();
-        red_bar.setText(String.valueOf(manager.twoDPart.num_red));
+        red_bar.setText(String.valueOf(manager.num_red));
         red_bar.setOpaque(true);
         red_bar.setBackground(symptomatic);
 
@@ -338,24 +383,24 @@ public class GUI extends JPanel {
         s.fill = GridBagConstraints.HORIZONTAL;
         s.gridx = 2;
         s.gridy = 0;
-        s.weightx = manager.twoDPart.num_red;
+        s.weightx = manager.num_red;
         bar.add(red_bar, s);
 
 
         JLabel dead_bar = new JLabel();
-        dead_bar.setText(String.valueOf(manager.twoDPart.num_black));
+        dead_bar.setText(String.valueOf(manager.num_black));
         dead_bar.setOpaque(true);
         dead_bar.setBackground(dead);
 
         s.fill = GridBagConstraints.HORIZONTAL;
         s.gridx = 3;
         s.gridy = 0;
-        s.weightx = manager.twoDPart.num_black;
+        s.weightx = manager.num_black;
         bar.add(dead_bar, s);
 
 
         JLabel blue_bar = new JLabel();
-        blue_bar.setText(String.valueOf(manager.twoDPart.num_blue));
+        blue_bar.setText(String.valueOf(manager.num_blue));
         blue_bar.setOpaque(true);
         blue_bar.setBackground(healed);
 
@@ -363,7 +408,7 @@ public class GUI extends JPanel {
         s.fill = GridBagConstraints.HORIZONTAL;
         s.gridx = 4;
         s.gridy = 0;
-        s.weightx = manager.twoDPart.num_blue;
+        s.weightx = manager.num_blue;
         bar.add(blue_bar, s);
     }
 }

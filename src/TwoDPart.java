@@ -12,19 +12,12 @@ public class TwoDPart extends JPanel implements Runnable {
     private final Color blue = new Color(45, 143, 171);
     private final Color black = new Color(26, 24, 27);
     private final Color gunmetal = new Color(19, 39, 53);
-    int num_green = 0;
-    int num_yellow = 0;
-    int num_red = 0;
-    int num_blue = 0;
-    int num_black = 0;
     Graphics g;
     Manager manager;
-    int tick = 30;
     Timer t;
 
     public TwoDPart(Manager manager) {
         this.manager = manager;
-        setSize(667, 740);
         setVisible(true);
     }
 
@@ -216,6 +209,17 @@ public class TwoDPart extends JPanel implements Runnable {
     }
 
     public void run() {
+    }
+
+    public void setTick(int tick) {
+        if (t != null) {
+            t.stop();
+            t = null;
+        }
+        if (tick < 0){
+            return;
+        }
+
         ActionListener action = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -223,25 +227,17 @@ public class TwoDPart extends JPanel implements Runnable {
                 repaint();      // questo succede ad ogni cadenza di tick
             }
         };
-
         t = new Timer(tick, action);        // cosa deve fare per ogni tick = azione
         t.start();
     }
 
-    public void setTick(int tick) {
-        if (tick < 0) {
-            t.stop();
-        } else {
-            if (!t.isRunning()) {
-                t.start();
-            }
-            t.setDelay(tick);
-        }
-    }
 
     public void paintComponent(Graphics g) {
         g.setColor(gunmetal);
         g.fillRect(0, 0, getWidth(), getHeight());
+        if (manager.people == null)
+            return;
+
         for (int i = 0; i < manager.people.length; i++) {
             if (manager.people[i].condition == Person.Status.yellow) {
                 g.setColor(yellow);
@@ -256,6 +252,7 @@ public class TwoDPart extends JPanel implements Runnable {
             }
             g.fillOval(manager.people[i].x - Person.r, manager.people[i].y - Person.r, Person.r * 2, Person.r * 2);
         }
+
         for (int i = 0; i < manager.walls.length; i++) {
             g.setColor(black);
             g.fillRect(manager.walls[i].getUpperLeft().x, manager.walls[i].getUpperLeft().y, manager.walls[i].getWidth(), manager.walls[i].getHeight());
