@@ -182,10 +182,7 @@ public class GUI extends JPanel {
         fps_slider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent changeEvent) {
-                if (fps_slider.getMaximum()-fps_slider.getValue()==0)
-                    manager.changeSpeed(1);
-                else
-                    manager.changeSpeed(fps_slider.getMaximum()-fps_slider.getValue());
+                fpsSliderEvent();
             }
         });
 
@@ -199,10 +196,8 @@ public class GUI extends JPanel {
                         once = true;
                     else{
                         fps_slider.setEnabled(true);
-                        if (fps_slider.getValue()==0)
-                            manager.changeSpeed(1000);
-                        else
-                            manager.changeSpeed(fps_slider.getValue()*10);
+                        fpsSliderEvent();
+                        play.setText("PAUSE");
                         return;
                     }
 
@@ -262,10 +257,7 @@ public class GUI extends JPanel {
 
                     manager.initialize(population, duration, infectivity, symptomaticQuality, letality, swab, meetings, resources);
                     fps_slider.setEnabled(true);
-                    if (fps_slider.getMaximum()-fps_slider.getValue()==0)
-                        manager.changeSpeed(1);
-                    else
-                        manager.changeSpeed(fps_slider.getMaximum()-fps_slider.getValue());
+                    fpsSliderEvent();
                 } else {
                     play.setText("PLAY");
                     manager.changeSpeed(-1);    //stop the timer
@@ -410,5 +402,12 @@ public class GUI extends JPanel {
         s.gridy = 0;
         s.weightx = manager.num_blue;
         bar.add(blue_bar, s);
+    }
+
+    public void fpsSliderEvent(){
+        if (fps_slider.getMaximum()-fps_slider.getValue()==0)
+            manager.changeSpeed(1);
+        else
+            manager.changeSpeed(fps_slider.getMaximum()-fps_slider.getValue());
     }
 }

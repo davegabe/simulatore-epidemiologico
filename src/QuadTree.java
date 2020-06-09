@@ -34,16 +34,16 @@ public class QuadTree {
         int midx = x1 + (x2 - x1) / 2;
         int midy = y1 + (y2 - y1) / 2;
 
-        boolean topQuadrant = (person.y - person.r >= y1 && person.y + person.r < midy);  // if it's in the upper half
-        boolean bottomQuadrant = (person.y - person.r >= midy && person.y + person.r < y2);                             // if it's in the bottom half
+        boolean topQuadrant = (person.y - person.r >= y1 && person.y + person.r < midy);    // if it's in the upper half
+        boolean bottomQuadrant = (person.y - person.r >= midy && person.y + person.r < y2); // if it's in the bottom half
 
-        if (person.x - person.r >= x1 && person.y + person.r < midx) {                    //if it's in the left half
+        if (person.x - person.r >= x1 && person.y + person.r < midx) {                      //if it's in the left half
             if (topQuadrant) {
                 index = 1;
             } else if (bottomQuadrant) {
                 index = 2;
             }
-        } else if (person.y - person.r >= midx && person.x + person.r < x2) {                                           //if it's in the right half
+        } else if (person.y - person.r >= midx && person.x + person.r < x2) {               //if it's in the right half
             if (topQuadrant) {
                 index = 0;
             } else if (bottomQuadrant) {
