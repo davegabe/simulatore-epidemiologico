@@ -2,7 +2,7 @@ import java.util.HashMap;
 
 public class Person {
     enum Status {green, yellow, blue, red, black}
-    static final int r = 10;
+    static final int r = 4;
     public Status condition = Status.green;
     public boolean hasVirus;
     public boolean mobility = true;
@@ -45,7 +45,7 @@ public class Person {
         //contacts.put(manager.getDay(), contacts.getOrDefault(manager.getDay(), new ArrayList<Person>()));
         if(other.condition== Status.yellow || other.condition== Status.red){
             if(!hasVirus)
-                hasVirus = Math.random()*100<manager.infectivity; //rolling dice...
+                hasVirus = Math.random()*100<=manager.infectivity; //rolling dice...
         }
     }
 
@@ -68,10 +68,10 @@ public class Person {
     }
 
     private void turningYellow() {
-        if(infectedDays==manager.duration/6){
-            condition= Status.yellow;
-            if(Math.random()*100<manager.symptomaticQuality) { //rolling dice...
-                symptomsDay = (int) (infectedDays+(Math.random() * 1 / 6 * manager.duration));
+        if(infectedDays>=manager.duration/6){
+            condition = Status.yellow;
+            if(manager.symptomaticQuality>0 && Math.random()*100<=manager.symptomaticQuality) { //rolling dice...
+                symptomsDay = (int) (infectedDays + 1 + (Math.random() * 1 / 6 * manager.duration));
             } else {
                 symptomsDay=-1;
             }
@@ -79,13 +79,13 @@ public class Person {
     }
 
     private void turningRed() {
-        if(infectedDays>=manager.duration/3){ //if the incubation time is over
+        if(infectedDays>manager.duration/3){ //if the incubation time is over
             turningBlue();
         }
         if(infectedDays==symptomsDay) { //if today is the day
             condition = Status.red;
-            if(Math.random()*100<manager.letality) { //rolling dice...
-                deathDay = (int) (infectedDays + (Math.random() * (manager.duration-infectedDays)));
+            if(manager.letality>0 && Math.random()*100<=manager.letality) { //rolling dice...
+                deathDay = (int) (infectedDays + 1 + (Math.random() * (manager.duration-infectedDays)));
             } else {
                 deathDay=-1;
             }

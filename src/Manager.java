@@ -83,6 +83,7 @@ public class Manager {
         num_red=0;
         num_blue=0;
         num_black=0;
+        int lastBlack=-1;
         for (int i = 0; i < people.length; i++) {
             switch (people[i].dayEvent()){
                 case green:
@@ -98,6 +99,17 @@ public class Manager {
                     num_blue+=1;
                     break;
                 case black:
+                    //order array so dead people are on top of array
+                    if(num_green==0 && num_yellow==0 && num_red==0 && num_blue==0){
+                        lastBlack=i;
+                    }
+                    else {
+                        lastBlack++;
+                        Person temp = people[lastBlack];
+                        people[lastBlack]=people[i];
+                        people[i]=temp;
+                    }
+                    //
                     num_black+=1;
                     break;
             }
