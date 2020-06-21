@@ -223,8 +223,10 @@ public class TwoDPart extends JPanel implements Runnable {
         ActionListener action = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                manager.physics.update();
-                repaint();      // questo succede ad ogni cadenza di tick
+                if(manager.physics!=null) {
+                    manager.physics.update();
+                    repaint();      // questo succede ad ogni cadenza di tick
+                }
             }
         };
         t = new Timer(tick, action);        // cosa deve fare per ogni tick = azione

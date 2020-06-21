@@ -2,7 +2,7 @@ import java.awt.*;
 
 public class Wall {
     private Rectangle rect;
-    static final int border=Person.r;
+    static int border = Person.r;
 
     Wall(int upperLeftX, int upperLeftY, int width, int height){
         this.rect = new Rectangle(upperLeftX, upperLeftY, width, height);

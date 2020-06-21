@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import static javax.swing.SwingConstants.HORIZONTAL;
 
 public class GUI extends JPanel {
+    private final int CONSTANT_RESOURCES = 100000;
     private final Color yellow = new Color(233, 196, 106);
     private final Color green = new Color(42, 157, 143);
     private final Color red = new Color(231, 111, 81);
@@ -28,9 +29,14 @@ public class GUI extends JPanel {
     private JPanel left_p;
     private JLabel counter;
     private JPanel bar;
+    private JButton play;
+    private JButton stop;
+    private JComboBox strategy_cmbx;
+
     //private JOptionPane error_dialogue;
     private boolean once = false;
     private Manager manager;
+    public enum Outcomes {Won, Dead, No_Money};
 
 
     public GUI(Manager manager) {
@@ -69,6 +75,8 @@ public class GUI extends JPanel {
         swab_txtfield = createTextField("Costo tampone", left_p);
         // INSERIMENTO INCONTRI FIELD
         meetings_txtfield = createTextField("Incontri", left_p);
+        // INSERIMENTO STRATEGY JCOMBOBOX
+        strategy_cmbx = createComboBox("Strategia", left_p);
 
         //
         left_p.add(Box.createRigidArea(new Dimension(0, 120)));   // SPAZIO CHE DIVIDE SLIDER DA BOTTONI
@@ -160,7 +168,7 @@ public class GUI extends JPanel {
 
 
         play_p.setBackground(color);
-        JButton play = new JButton("PLAY");
+        play = new JButton("PLAY");
 
         Dimension dim_buttons = new Dimension(200, 50);
 
@@ -172,7 +180,7 @@ public class GUI extends JPanel {
 
         JPanel stop_p = new JPanel();
         stop_p.setBackground(color);
-        JButton stop = new JButton("STOP");
+        stop = new JButton("STOP");
 
         stop.setPreferredSize(dim_buttons);
         stop_p.add(stop);
@@ -192,17 +200,16 @@ public class GUI extends JPanel {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (play.getText().equals("PLAY")) {
 
-                    if (!once)              //if already started
+                    if (!once) {
                         once = true;
-                    else{
+                    } else {                              //if is paused
                         fps_slider.setEnabled(true);
                         fpsSliderEvent();
                         play.setText("PAUSE");
                         return;
                     }
 
-
-                    int population = 1;
+                    int population = 2;
                     float swab = 1;
                     float meetings = 1;
                     int resources = 1;// gets meetings
@@ -210,54 +217,51 @@ public class GUI extends JPanel {
                     int symptomaticQuality = sint_slider.getValue();
                     int letality = let_slider.getValue();
                     int duration = duration_slider.getValue();
+                    if(duration==0) duration=1;
+                    int strategy;
 
-
-
-                    if (!population_txtfield.getText().equals("")) {
-                        if(Integer.parseInt(population_txtfield.getText())>=1)
+                    try {
+                        if (!population_txtfield.getText().equals("") && Integer.parseInt(population_txtfield.getText()) >= 1) {
                             population = Integer.parseInt(population_txtfield.getText());
-                    }                                                                                            // gets population
-                    if (!swab_txtfield.getText().equals("")) {
-                        if(Float.parseFloat(swab_txtfield.getText())>0)
-                            swab = Float.parseFloat(swab_txtfield.getText());
-                    }                                                                                            // gets swab
-                    if (!meetings_txtfield.getText().equals("")){
-                        if(Float.parseFloat(meetings_txtfield.getText())>0)
-                            meetings = Float.parseFloat(meetings_txtfield.getText());
-                    }
-                    if (!resources_txtfield.getText().equals("")) {
-                        if(Integer.parseInt(resources_txtfield.getText())>=1)
-                            resources = Integer.parseInt(resources_txtfield.getText());
-                        if(resources >= 10*population*swab) {
-                            System.out.println(population);
-                            String error = "You must chose a lower value for 'Resources'!";
-                            JOptionPane.showMessageDialog(null, error);
-                            System.out.println(resources);
-                            once = false;
-                            //new ResourcesChecker();
                         }
-                    }
+                        else throw new Exception("Invalid people input!");
 
-                    if(resources < 10*population*swab) {
+                        if (!resources_txtfield.getText().equals("") && Integer.parseInt(resources_txtfield.getText()) >= 1) {
+                            resources = Integer.parseInt(resources_txtfield.getText());
+                        }
+                        else throw new Exception("Invalid resources input!");
+
+                        // gets population
+                        if (!swab_txtfield.getText().equals("") && Float.parseFloat(swab_txtfield.getText()) > 0) {
+                            swab = Float.parseFloat(swab_txtfield.getText());
+                        }                                                                                            // gets swab
+                        else throw new Exception("Invalid swab input!");
+
+                        if (!meetings_txtfield.getText().equals("") && Float.parseFloat(meetings_txtfield.getText()) > 0) {
+                            meetings = Float.parseFloat(meetings_txtfield.getText());
+                        }
+                        else throw new Exception("Invalid meetings input!");
+
+                        if (resources >= CONSTANT_RESOURCES * population * swab)
+                            throw new Exception("Resources are too high!");
+
+                        if (strategy_cmbx.getSelectedItem() != null){
+                            strategy = strategy_cmbx.getSelectedIndex();
+                        }
+                        else throw new Exception("Select a strategy to follow");
+
+
+                        manager.initialize(population, duration, infectivity, symptomaticQuality, letality, swab, meetings, resources, strategy);
+
                         play.setText("PAUSE");
                         stop.setVisible(true);
+                        fps_slider.setEnabled(true);
+                        fpsSliderEvent();
                     }
-                    else{
-                        return;
+                    catch (Exception e){
+                        once = false;
+                        JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR!", JOptionPane.ERROR_MESSAGE);
                     }
-
-                    System.out.println("infectivity = " + infectivity);
-                    System.out.println("symptomaticQuality = " + symptomaticQuality);
-                    System.out.println("letality = " + letality);
-                    System.out.println("duration = " + duration);
-                    System.out.println("population = " + population);
-                    System.out.println("swabone = " + swab);
-                    System.out.println("meetings = " + meetings);
-                    System.out.println("resources = " + resources);
-
-                    manager.initialize(population, duration, infectivity, symptomaticQuality, letality, swab, meetings, resources);
-                    fps_slider.setEnabled(true);
-                    fpsSliderEvent();
                 } else {
                     play.setText("PLAY");
                     manager.changeSpeed(-1);    //stop the timer
@@ -269,14 +273,18 @@ public class GUI extends JPanel {
         stop.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                play.setText("PLAY");
-                manager.destroy();
-                stop.setVisible(false);
-                once = false;
-                manager.day=0;
+                stop();
             }
         });
+    }
 
+    private void stop() {
+        play.setText("PLAY");
+        manager.destroy();
+        resetBar();
+        stop.setVisible(false);
+        once = false;
+        fps_slider.setEnabled(true);
     }
 
     private JSlider createSlider(String label, JPanel parentPanel, Color color, int minorTick, int majorTick, int maxValue, int minValue) {
@@ -404,10 +412,63 @@ public class GUI extends JPanel {
         bar.add(blue_bar, s);
     }
 
+
+    public JComboBox createComboBox(String label, JPanel parentPanel){
+        JPanel jPanel = new JPanel();
+        jPanel.setLayout(new GridBagLayout());
+        c.fill = GridBagConstraints.HORIZONTAL;
+        parentPanel.add(jPanel);
+
+        JLabel jLabel = new JLabel();
+        jLabel.setText(label);
+        c.gridx = 0;
+        c.gridy = 0;
+        c.insets = new Insets(0, 30, 0, 0);
+        jPanel.add(jLabel, c);
+
+
+        JComboBox jComboBox = new JComboBox(Manager.Strategy.values());
+        jComboBox.setPreferredSize(new Dimension(200, 24));
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 0;
+        c.gridy = 1;
+        c.insets = new Insets(8, 40, 0, 30);         // inserisce uno spazio tra gli elementi
+        jPanel.add(jComboBox, c);
+        return jComboBox;
+    }
+
     public void fpsSliderEvent(){
         if (fps_slider.getMaximum()-fps_slider.getValue()==0)
             manager.changeSpeed(1);
         else
             manager.changeSpeed(fps_slider.getMaximum()-fps_slider.getValue());
     }
+
+    public void OutcomeDialog(Outcomes outcome){
+        String ending = null;
+        switch(outcome){
+            case Won:
+                ending = "The virus has been eradicated!";
+                break;
+            case Dead:
+                ending = "Unfortunately everyone died..";
+                break;
+            case No_Money:
+                ending = "The economy collapsed...";
+                break;
+        }
+        JOptionPane.showMessageDialog(null, ending, "Error",JOptionPane.ERROR_MESSAGE);
+        stop();
+    }
+
+    public void resetBar(){
+        manager.num_black = 0;
+        manager.num_green = 0;
+        manager.num_yellow = 0;
+        manager.num_red = 0;
+        manager.num_blue = 0;
+        recreateBar();
+
+    }
+
 }

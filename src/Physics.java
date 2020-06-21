@@ -28,8 +28,8 @@ public class Physics {
 
     public void update() {
         movePlayers();
-        updateQuadTree();
-        //checkCollisionNotGoodButWorking();
+        //updateQuadTree();
+        checkCollisionQuadratic();
         checkWalls();
         moveBackPlayers();
         movePlayers();
@@ -38,6 +38,8 @@ public class Physics {
 
     private void movePlayers() {
         for (int i = 0; i < manager.people.length; i++) {
+            if(manager.people[i].dir==null)
+                manager.people[i].dir = new Vector2();
             manager.people[i].move();
         }
     }
@@ -66,17 +68,27 @@ public class Physics {
         for (int i = 0; i < manager.people.length; i++) {
             //check with other players
             for (int j = i + 1; j < manager.people.length; j++) {
+                if(manager.people[i].condition== Person.Status.black||manager.people[j].condition== Person.Status.black) continue;
                 double distance = Math.sqrt(Math.pow(manager.people[i].x - manager.people[j].x, 2) + Math.pow(manager.people[i].y - manager.people[j].y, 2));
                 if (distance <= Person.r * 2) {
                     manager.people[i].meeting(manager.people[j]);
                     manager.people[j].meeting(manager.people[i]);
+                    collisionCounter+=2;
 
-                    int tempSpeedX = manager.people[j].dir.speedX;
-                    int tempSpeedY = manager.people[j].dir.speedY;
-                    manager.people[j].dir.speedX = manager.people[i].dir.speedX;
-                    manager.people[j].dir.speedY = manager.people[i].dir.speedY;
-                    manager.people[i].dir.speedX = tempSpeedX;
-                    manager.people[i].dir.speedY = tempSpeedY;
+                    if(manager.people[i].mobility==false){
+                        manager.people[j].dir.speedX *= -1;
+                        manager.people[j].dir.speedY *= -1;
+                    } else if(manager.people[j].mobility==false){
+                        manager.people[i].dir.speedX *= -1;
+                        manager.people[i].dir.speedY *= -1;
+                    } else {
+                        int tempSpeedX = manager.people[j].dir.speedX;
+                        int tempSpeedY = manager.people[j].dir.speedY;
+                        manager.people[j].dir.speedX = manager.people[i].dir.speedX;
+                        manager.people[j].dir.speedY = manager.people[i].dir.speedY;
+                        manager.people[i].dir.speedX = tempSpeedX;
+                        manager.people[i].dir.speedY = tempSpeedY;
+                    }
                 }
             }
         }
@@ -84,21 +96,29 @@ public class Physics {
 
     private void checkCollision(Person person, ArrayList<Person> otherPeople, HashMap alreadyCalculated) {
         for (int i = 0; i < otherPeople.size(); i++) {
-            if(person==otherPeople.get(i) || alreadyCalculated.get(person)==otherPeople.get(i)) continue;
+            if(person==otherPeople.get(i) || alreadyCalculated.containsKey(otherPeople.get(i))) continue;
             if(person.condition== Person.Status.black||otherPeople.get(i).condition== Person.Status.black) continue;
             double distance = Math.sqrt(Math.pow(person.x - otherPeople.get(i).x, 2) + Math.pow(person.y - otherPeople.get(i).y, 2));
             if (distance <= Person.r * 2) {
-                alreadyCalculated.put(otherPeople.get(i), person);
+                alreadyCalculated.put(person,true);
                 person.meeting(otherPeople.get(i));
                 otherPeople.get(i).meeting(person);
                 collisionCounter+=2;
 
-                int tempSpeedX = otherPeople.get(i).dir.speedX;
-                int tempSpeedY = otherPeople.get(i).dir.speedY;
-                otherPeople.get(i).dir.speedX = person.dir.speedX;
-                otherPeople.get(i).dir.speedY = person.dir.speedY;
-                person.dir.speedX = tempSpeedX;
-                person.dir.speedY = tempSpeedY;
+                if(person.mobility==false){
+                    otherPeople.get(i).dir.speedX *= -1;
+                    otherPeople.get(i).dir.speedY *= -1;
+                } else if(otherPeople.get(i).mobility==false){
+                    person.dir.speedX *= -1;
+                    person.dir.speedY *= -1;
+                } else {
+                    int tempSpeedX = otherPeople.get(i).dir.speedX;
+                    int tempSpeedY = otherPeople.get(i).dir.speedY;
+                    otherPeople.get(i).dir.speedX = person.dir.speedX;
+                    otherPeople.get(i).dir.speedY = person.dir.speedY;
+                    person.dir.speedX = tempSpeedX;
+                    person.dir.speedY = tempSpeedY;
+                }
             }
         }
     }
@@ -112,10 +132,12 @@ public class Physics {
                 Point right = new Point(manager.people[i].x + Person.r, manager.people[i].y);
                 if (manager.walls[j].contains(upper) || manager.walls[j].contains(bottom)) {
                     manager.people[i].dir.speedY *= -1;
+                    collisionCounter++;
                     break;
                 }
                 if (manager.walls[j].contains(left) || manager.walls[j].contains(right)) {
                     manager.people[i].dir.speedX *= -1;
+                    collisionCounter++;
                     break;
                 }
             }
@@ -129,7 +151,7 @@ public class Physics {
     }
 
     private void checkForDay(){
-        if(collisionCounter/manager.people.length>=manager.meetings){
+        if(collisionCounter/manager.movingDuringDay>=manager.meetings){
             manager.anotherDay();
             collisionCounter=0;
         }
