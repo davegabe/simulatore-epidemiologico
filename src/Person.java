@@ -19,7 +19,7 @@ public class Person {
     private int symptomsDay;
     private int deathDay;
     public boolean swabResult = false;
-    public int meetingsDay;
+    public int Vd;
 
     public Person(int x, int y, Manager manager) {
         this.x = x;
@@ -44,7 +44,7 @@ public class Person {
     }
 
     public void meeting(Person other) {
-        meetingsDay++;
+        Vd++;
         if(condition== Status.blue || other.condition== Status.blue)
             return;
 

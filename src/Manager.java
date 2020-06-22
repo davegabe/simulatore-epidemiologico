@@ -12,13 +12,14 @@ public class Manager {
     public float meetings;
     public int movingDuringDay;
     public int day = 0;
-    public int Vd;
+    public float Vd = 0;
+    public float R0;
     public int num_green;
     public int num_yellow;
     public int num_red;
     public int num_blue;
     public int num_black;
-    public int resources;
+    public int resources = 0;
     public float swabCost;
     private GUI gui;
     private Strategy chosenStrategy;
@@ -57,7 +58,7 @@ public class Manager {
         isStrategyStarted = false;
         doStrategy = true;
         day = 0;
-        gui.updateDayCounter();
+        gui.updateStats();
 
         int maxRow = (int) Math.ceil(Math.sqrt(population));
         int stepX = (width - 2 * (Person.r + Wall.border)) / maxRow - 1;
@@ -122,17 +123,21 @@ public class Manager {
             switch (people[i].dayEvent()) {
                 case green:
                     num_green++;
+                    Vd += people[i].Vd;
                     break;
                 case yellow:
                     num_yellow++;
+                    Vd += people[i].Vd;
                     break;
                 case red:
                     num_red++;
                     resources-=3*swabCost;
                     isStrategyStarted = true;
+                    Vd += people[i].Vd;
                     break;
                 case blue:
                     num_blue++;
+                    Vd += people[i].Vd;
                     break;
                 case black:
                     //order array so dead people are on top of array
@@ -150,12 +155,11 @@ public class Manager {
             }
             if (people[i].canMove()) {
                 movingDuringDay++;
-                Vd += people[i].meetingsDay;
             }
             if (!people[i].mobility) {
                 resources--;
             }
-            people[i].meetingsDay=0;
+            people[i].Vd=0;
 
             //part of strategy
             if(isStrategyStarted){
@@ -180,20 +184,26 @@ public class Manager {
             }
             //
         }
-        Vd/=people.length-num_black;
         gui.recreateBar();
         twoDPart.repaint();
+        twoDPart.resetCounter();
         dailyGraph.addDay();
-        gui.updateDayCounter();
         if (num_black == people.length) {
+            Vd=0;
+            gui.updateStats();
             gui.OutcomeDialog(Outcomes.Dead);
-            destroy();
             return;
-        } else if (resources <= 0) {
+        }
+        if (resources <= 0) {
+            Vd=Vd/(people.length-num_black);
+            gui.updateStats();
             gui.OutcomeDialog(Outcomes.No_Money);
-            destroy();
             return;
-        } else if (Vd*duration*infectivity <1 || num_red+num_yellow==0){
+        }
+        Vd=Vd/(people.length-num_black);
+        gui.updateStats();
+        R0=Vd*duration*infectivity;
+        if (num_red+num_yellow==0){
             gui.OutcomeDialog(Outcomes.Won);
             destroy();
             return;

@@ -131,12 +131,10 @@ public class Physics {
                 Point right = new Point(manager.people[i].x + Person.r, manager.people[i].y);
                 if (manager.walls[j].contains(upper) || manager.walls[j].contains(bottom)) {
                     manager.people[i].dir.speedY *= -1;
-                    collisionCounter++;
                     break;
                 }
                 if (manager.walls[j].contains(left) || manager.walls[j].contains(right)) {
                     manager.people[i].dir.speedX *= -1;
-                    collisionCounter++;
                     break;
                 }
             }
@@ -150,6 +148,8 @@ public class Physics {
     }
 
     private void checkForDay(){
+        if(manager.movingDuringDay<=0)
+            return;
         if(collisionCounter/manager.movingDuringDay>=manager.meetings){
             manager.anotherDay();
             collisionCounter=0;

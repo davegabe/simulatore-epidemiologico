@@ -18,7 +18,9 @@ public class GUI extends JPanel {
     private JSlider duration_slider;
     private JSlider fps_slider;
     private JPanel center;
-    private JLabel counter;
+    private JLabel counterDays;
+    private JLabel counterResources;
+    private JLabel counterVd;
     private JPanel bar;
     private JButton play;
     private JButton stop;
@@ -63,7 +65,7 @@ public class GUI extends JPanel {
 
         left_p.add(manager.dailyGraph);
 
-        left_p.add(createDaysCounter(left_p, manager.day));                 // instead of days_value, we should put the manager's days counter
+        left_p.add(createStats(left_p, manager.day, manager.Vd, manager.resources));                 // instead of days_value, we should put the manager's days counter
 
         left_p.add(Box.createRigidArea(new Dimension(0, 120)));
 
@@ -232,22 +234,33 @@ public class GUI extends JPanel {
             manager.changeSpeed(fps_slider.getMaximum() - fps_slider.getValue());
     }
 
-    public void updateDayCounter() {
-        counter.setText(String.valueOf(manager.day));
+    public void updateStats() {
+        counterDays.setText(String.valueOf(manager.day));
+        counterResources.setText(String.valueOf(manager.resources));
+        counterVd.setText(String.valueOf(manager.Vd));
     }
 
-    private JPanel createDaysCounter(JPanel parentPanel, int days_value) {
-        JPanel counter_p = new JPanel();
-        //counter_p.setBackground(blue);
-        counter_p.setLayout(new FlowLayout());
+    private JPanel createStats(JPanel parentPanel, int day_value, float Vd_value, int resource_value) {
+        JPanel stats_p = new JPanel(new FlowLayout());
         JLabel days = new JLabel("Days:");
-        counter = new JLabel(String.valueOf(days_value));
-        // whenever the meetings meet the velocity field, this should be upped by 1.
+        counterDays = new JLabel(String.valueOf(day_value));
+        stats_p.add(days);
+        stats_p.add(counterDays);
+        parentPanel.add(stats_p);
 
-        counter_p.add(days);
-        counter_p.add(counter);
-        parentPanel.add(counter_p);
-        return counter_p;
+        stats_p = new JPanel(new FlowLayout());
+        JLabel resources = new JLabel("Resources:");
+        counterResources = new JLabel(String.valueOf(resource_value));
+        stats_p.add(resources);
+        stats_p.add(counterResources);
+        parentPanel.add(stats_p);
+
+        stats_p = new JPanel(new FlowLayout());
+        JLabel Vd = new JLabel("Vd:");
+        counterVd = new JLabel(String.valueOf(Vd_value));
+        stats_p.add(Vd);
+        stats_p.add(counterVd);
+        return stats_p;
 
     }
 

@@ -4,8 +4,10 @@ import java.awt.image.ImageObserver;
 import java.text.AttributedCharacterIterator;
 
 public class TwoDPart extends JPanel implements Runnable {
+    static final int MAX_TIME = 400;
     private Manager manager;
     private Timer t;
+    private int counterMsLastDay;
 
     public TwoDPart(Manager manager) {
         this.manager = manager;
@@ -211,13 +213,22 @@ public class TwoDPart extends JPanel implements Runnable {
             return;
         }
         t = new Timer(tick, e -> update());
+        resetCounter();
         t.start();
+    }
+
+    public void resetCounter(){
+        counterMsLastDay = MAX_TIME;
     }
 
     public void update(){
         if(manager.physics!=null) {
             manager.physics.update();
             repaint();
+            counterMsLastDay--;
+            if(counterMsLastDay<0){
+                manager.anotherDay();
+            }
         }
     }
 
@@ -246,5 +257,8 @@ public class TwoDPart extends JPanel implements Runnable {
             g.setColor(ColorsManager.black);
             g.fillRect(manager.walls[i].getUpperLeft().x, manager.walls[i].getUpperLeft().y, manager.walls[i].getWidth(), manager.walls[i].getHeight());
         }
+
+        g.setColor(Color.gray);
+        g.drawString(String.valueOf(counterMsLastDay), 20, 20);
     }
 }
