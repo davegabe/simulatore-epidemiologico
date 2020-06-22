@@ -2,17 +2,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Person {
-    enum Status {green, yellow, blue, red, black}
     static final int rMax = 12;
+    static final int rMin = 3;
     static int r = rMax;
     public Status condition = Status.green;
     public boolean hasVirus;
     public boolean mobility = true;
-    public int x;                                      //x, y -> person's position  in the space
+    public int x;
     public int y;
     public Vector2 dir;
     private Manager manager;
-    private HashMap contacts = new HashMap();
+    public HashMap<Integer ,ArrayList<Person>> contacts = new HashMap();
     private int prevX;
     private int prevY;
     private int infectedDays;
@@ -48,7 +48,7 @@ public class Person {
         if(condition== Status.blue || other.condition== Status.blue)
             return;
 
-        ArrayList<Person> personArrayList = (ArrayList<Person>) contacts.getOrDefault(manager.day, new ArrayList<Person>());
+        ArrayList<Person> personArrayList = contacts.getOrDefault(manager.day, new ArrayList<Person>());
         personArrayList.add(other);
         contacts.put(manager.day, personArrayList);
 
@@ -61,6 +61,7 @@ public class Person {
     public boolean doSwab(){
         if(condition == Status.red || condition == Status.yellow){
             swabResult = true;
+            mobility = false;
         }
         manager.resources-=manager.swabCost;
         return swabResult;

@@ -1,0 +1,1 @@
+public enum Strategy {PRAY, HALF_RANDOM, LAZARETTO, RANDOM_SWAB, SMART_SWAB}

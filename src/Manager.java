@@ -8,9 +8,11 @@ public class Manager {
     public Wall[] walls;
     public Physics physics;
     public TwoDPart twoDPart;
+    public DailyGraph dailyGraph;
     public float meetings;
     public int movingDuringDay;
     public int day = 0;
+    public int Vd;
     public int num_green;
     public int num_yellow;
     public int num_red;
@@ -19,10 +21,10 @@ public class Manager {
     public int resources;
     public float swabCost;
     private GUI gui;
-    private Strategy chosenStrategy = Strategy.HALF_RANDOM;
-    boolean isStrategyStarted;
+    private Strategy chosenStrategy;
+    private boolean isStrategyStarted;
     private boolean doStrategy;
-    enum Strategy {PRAY, HALF_RANDOM, LAZARETTO, RANDOM_SWAB, SMART_SWAB}
+    private int height;
 
     public static void main(String[] args) {
         new Manager().start();
@@ -30,14 +32,20 @@ public class Manager {
 
     public void start() {
         twoDPart = new TwoDPart(this);
+        dailyGraph = new DailyGraph(this);
         gui = new GUI(this);
         gui.initialize();
     }
 
-    public void initialize(int population, int duration, int infectivity, int symptomaticQuality, int letality, float swabCost, float meetings, int resources, int strategy) throws Exception {
-        if (population > MAX_PEOPLE) throw new Exception("Too many people");
+    public void initialize(int population, int duration, int infectivity, int symptomaticQuality, int letality, float swabCost, float meetings, int resources, int strategy) throws InputException {
+        if (population > MAX_PEOPLE) throw new InputException("Too many people");
         int width = twoDPart.getWidth();
-        int heigth = twoDPart.getHeight();
+        height = twoDPart.getHeight();
+        this.chosenStrategy = Strategy.values()[strategy];
+
+        if(chosenStrategy==Strategy.LAZARETTO)
+            height*=0.8;
+
         people = new Person[population];
         this.duration = duration;
         this.infectivity = infectivity;
@@ -46,7 +54,6 @@ public class Manager {
         this.swabCost = swabCost;
         this.meetings = meetings;
         this.resources = resources;
-        this.chosenStrategy = Strategy.values()[strategy];
         isStrategyStarted = false;
         doStrategy = true;
         day = 0;
@@ -54,9 +61,9 @@ public class Manager {
 
         int maxRow = (int) Math.ceil(Math.sqrt(population));
         int stepX = (width - 2 * (Person.r + Wall.border)) / maxRow - 1;
-        int stepY = (heigth - 2 * (Person.r + Wall.border)) / maxRow - 1;
+        int stepY = (height - 2 * (Person.r + Wall.border)) / maxRow - 1;
         int currX = (width - (stepX * (maxRow - 1))) / 2;
-        int currY = (heigth - (stepY * (maxRow - 1))) / 2;
+        int currY = (height - (stepY * (maxRow - 1))) / 2;
 
         for (int i = 0; i < population; i++) {
             people[i] = new Person(currX, currY, this);
@@ -69,23 +76,24 @@ public class Manager {
         people[(int) (Math.random() * (population - 1))].forceIllness();
         movingDuringDay = population;
 
-        if (stepX <= 5 || stepY <= 5) {
+        if (stepX <= Person.rMin*2 || stepY <= Person.rMin*2) {
             destroy();
-            throw new Exception("Too many people");
+            throw new InputException("Too many people");
         } else {
-            Person.r = Math.min(Math.min(stepX, stepY) / 4, Person.rMax);
+            Person.r = Math.max(Math.min(Math.min(stepX, stepY) / 4, Person.rMax), Person.rMin);
             Vector2.speed = Math.max(Person.r / 2, 4);
-            Wall.border = Person.r;
+            Wall.border = Person.r*2;
         }
 
         walls = new Wall[4];
         walls[0] = new Wall(0, 0, width, Wall.border);                      //top
-        walls[1] = new Wall(0, 0, Wall.border, heigth);                     //left
-        walls[2] = new Wall(width - Wall.border, 0, Wall.border, heigth);                             //right
-        walls[3] = new Wall(0, heigth - Wall.border, width, Wall.border);   //bottom
+        walls[1] = new Wall(0, 0, Wall.border, height);                     //left
+        walls[2] = new Wall(width - Wall.border, 0, Wall.border, height);   //right
+        walls[3] = new Wall(0, height - Wall.border, width, Wall.border);   //bottom
 
-        physics = new Physics(this, 0, width, 0, heigth);
+        physics = new Physics(this, 0, width, 0, height);
         twoDPart.initialize();
+        dailyGraph.initialize();
     }
 
     public void changeSpeed(int tick) {
@@ -108,7 +116,7 @@ public class Manager {
         num_red = 0;
         num_blue = 0;
         num_black = 0;
-        float Vd = 0;
+        Vd = 0;
         int lastBlack = -1;
         for (int i = 0; i < people.length; i++) {
             switch (people[i].dayEvent()) {
@@ -121,6 +129,7 @@ public class Manager {
                 case red:
                     num_red++;
                     resources-=3*swabCost;
+                    isStrategyStarted = true;
                     break;
                 case blue:
                     num_blue++;
@@ -148,33 +157,48 @@ public class Manager {
             }
             people[i].meetingsDay=0;
 
-            //part of startegy
+            //part of strategy
             if(isStrategyStarted){
+                if(chosenStrategy==Strategy.LAZARETTO){
+                    if(people[i].condition== Status.red && people[i].y<=height){
+                        people[i].y = (int)(height + Wall.border + Person.r*2 + Math.random()*height*0.1);
+                    }
+                    if(people[i].condition == Status.blue && people[i].y>=height){
+                        people[i].y = (int)(Math.random()*height*0.8) + Wall.border + Person.r*2;
+                    }
+                }
+
+                if(chosenStrategy==Strategy.SMART_SWAB){
+                    if(people[i].condition== Status.red){
+                        people[i].contacts.forEach((day, contactList)->{
+                            contactList.forEach((person -> {
+                                person.doSwab();
+                            }));
+                        });
+                    }
+                }
             }
             //
         }
         Vd/=people.length-num_black;
         gui.recreateBar();
         twoDPart.repaint();
+        dailyGraph.addDay();
         gui.updateDayCounter();
-        if (num_red >= 1) {
-            isStrategyStarted = true;
+        if (num_black == people.length) {
+            gui.OutcomeDialog(Outcomes.Dead);
+            destroy();
+            return;
+        } else if (resources <= 0) {
+            gui.OutcomeDialog(Outcomes.No_Money);
+            destroy();
+            return;
+        } else if (Vd*duration*infectivity <1 || num_red+num_yellow==0){
+            gui.OutcomeDialog(Outcomes.Won);
+            destroy();
+            return;
         }
         if (isStrategyStarted) {
-            if (num_black == people.length) {
-                gui.OutcomeDialog(GUI.Outcomes.Dead);
-                destroy();
-                return;
-            } else if (resources <= 0) {
-                gui.OutcomeDialog(GUI.Outcomes.No_Money);
-                destroy();
-                return;
-            } else if (Vd*duration*infectivity <1 || num_red+num_yellow==0){
-                gui.OutcomeDialog(GUI.Outcomes.Won);
-                destroy();
-                return;
-            }
-
             switch (chosenStrategy){
                 case PRAY:
                     break;
@@ -182,12 +206,8 @@ public class Manager {
                     if(doStrategy)
                         halfRandom();
                     break;
-                case LAZARETTO:
-                    break;
                 case RANDOM_SWAB:
                     randomSwab();
-                    break;
-                case SMART_SWAB:
                     break;
             }
         }
@@ -197,7 +217,7 @@ public class Manager {
         int i=0;
         while (i<(int)(Math.random()*people.length/2)){
             int temp = (int)(Math.random()*(people.length-1));
-            if(!people[temp].swabResult && (people[temp].condition == Person.Status.yellow || people[temp].condition== Person.Status.green)){
+            if(!people[temp].swabResult && (people[temp].condition == Status.yellow || people[temp].condition== Status.green)){
                 if(people[temp].doSwab()){
                     people[temp].stopMovement();
                 }
@@ -218,5 +238,6 @@ public class Manager {
         }
         doStrategy = false;
     }
+
 
 }
