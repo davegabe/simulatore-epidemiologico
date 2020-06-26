@@ -5,7 +5,7 @@ public class Person {
     static final int rMax = 12;
     static final int rMin = 3;
     static int r = rMax;
-    public Status condition = Status.green;
+    public Status condition = Status.GREEN;
     public boolean hasVirus;
     public boolean mobility = true;
     public int x;
@@ -20,6 +20,7 @@ public class Person {
     private int deathDay;
     public boolean swabResult = false;
     public int Vd;
+    public boolean checkedContacts=false;
 
     public Person(int x, int y, Manager manager) {
         this.x = x;
@@ -45,21 +46,26 @@ public class Person {
 
     public void meeting(Person other) {
         Vd++;
-        if(condition== Status.blue || other.condition== Status.blue)
+        if(condition == Status.BLUE || other.condition== Status.BLUE)
             return;
 
-        ArrayList<Person> personArrayList = contacts.getOrDefault(manager.day, new ArrayList<Person>());
+        ArrayList<Person> personArrayList = contacts.getOrDefault(manager.day, new ArrayList<>());
         personArrayList.add(other);
         contacts.put(manager.day, personArrayList);
 
-        if(other.condition== Status.yellow || other.condition== Status.red){
+        if(other.condition== Status.YELLOW || other.condition== Status.RED){
             if(!hasVirus)
                 hasVirus = Math.random()*100<=manager.infectivity; //rolling dice...
         }
     }
 
     public boolean doSwab(){
-        if(condition == Status.red || condition == Status.yellow){
+        if(condition==Status.RED)
+            return true;
+        if(condition==Status.BLACK || condition==Status.BLUE)
+            return false;
+
+        if(condition == Status.YELLOW){
             swabResult = true;
             mobility = false;
         }
@@ -67,32 +73,31 @@ public class Person {
         return swabResult;
     }
 
-    public Status dayEvent(){
+    public void dayEvent(){
         if(hasVirus) {
             switch (condition) {
-                case green:
+                case GREEN:
                     turningYellow();
                     break;
-                case yellow:
+                case YELLOW:
                     turningRed();
                     break;
-                case red:
+                case RED:
                     turningBlack();
                     break;
             }
             infectedDays++;
         }
         if(!contacts.containsKey(manager.day))
-            contacts.put(manager.day, new ArrayList<Person>());
+            contacts.put(manager.day, new ArrayList<>());
         if(contacts.size()>manager.duration){
             contacts.remove(manager.day-manager.duration-1);
         }
-        return condition;
     }
 
     private void turningYellow() {
         if(infectedDays>=manager.duration/6){
-            condition = Status.yellow;
+            condition = Status.YELLOW;
             if(manager.symptomaticQuality>0 && Math.random()*100<=manager.symptomaticQuality) { //rolling dice...
                 symptomsDay = (int) (infectedDays + 1 + (Math.random() * 1 / 6 * manager.duration));
             } else {
@@ -106,7 +111,7 @@ public class Person {
             turningBlue();
         }
         if(infectedDays==symptomsDay) { //if today is the day
-            condition = Status.red;
+            condition = Status.RED;
             stopMovement();
             if(manager.letality>0 && Math.random()*100<=manager.letality) { //rolling dice...
                 deathDay = (int) (infectedDays + 1 + (Math.random() * (manager.duration-infectedDays)));
@@ -121,12 +126,12 @@ public class Person {
             turningBlue();
         }
         if(infectedDays==deathDay) { //if today is the day
-            condition= Status.black;
+            condition = Status.BLACK;
         }
     }
 
     private void turningBlue() {
-        condition = Status.blue;
+        condition = Status.BLUE;
         startMovement();
     }
 
@@ -139,17 +144,17 @@ public class Person {
 
     public void stopMovement(){
         mobility=false;
-        dir = new Vector2(0,0);
+        dir = new Vector2(0,0);//
     }
 
     public void startMovement(){
         mobility=true;
-        if(dir.speedX==0 && dir.speedY==0)
+        if(dir.speedX==0 && dir.speedY==0)//
             dir = new Vector2();
     }
 
     public boolean canMove(){
-        return (mobility && condition!=Status.black);
+        return (mobility && condition!=Status.BLACK);
     }
 }
 

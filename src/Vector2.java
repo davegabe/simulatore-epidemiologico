@@ -15,5 +15,4 @@ public class Vector2 {
         this.speedX = (int) (speedX*speed);
         this.speedY = (int) (speedY*speed);
     }
-
 }

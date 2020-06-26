@@ -1,6 +1,4 @@
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 
 import static javax.swing.SwingConstants.HORIZONTAL;
@@ -57,22 +55,26 @@ public class GUI extends JPanel {
 
         population_txtfield = createTextField("Popolazione", left_p);   // Inserting POPOLAZIONE FIELD
         resources_txtfield = createTextField("Risorse", left_p);        // Inserting RISORSE FIELD
-        swab_txtfield = createTextField("Costo tampone", left_p);       // Inserting TAMPONE FIELD
+        swab_txtfield = createTextField("Costo cure", left_p);          // Inserting TAMPONE FIELD
         meetings_txtfield = createTextField("Incontri", left_p);        // Inserting INCONTRI FIELD
         strategy_cmbx = createComboBox("Strategia", left_p);            // Inserting STRATEGY JCOMBOBOX
 
         left_p.add(Box.createRigidArea(new Dimension(0, 120)));  // SPAZIO CHE DIVIDE SLIDER DA BOTTONI
 
-        left_p.add(manager.dailyGraph);
+        //left_p.add(manager.dailyGraph);
+        JFrame newroba = new JFrame();
+        newroba.add(manager.dailyGraph);
+        newroba.setVisible(true);
+        newroba.setSize(500,500);
 
         left_p.add(createStats(left_p, manager.day, manager.Vd, manager.resources));                 // instead of days_value, we should put the manager's days counter
 
         left_p.add(Box.createRigidArea(new Dimension(0, 120)));
 
-        population_txtfield.setDocument(new IntDocument(10));
-        swab_txtfield.setDocument(new DoubleDocument(10));
-        meetings_txtfield.setDocument(new DoubleDocument(10));
-        resources_txtfield.setDocument(new IntDocument(10));
+        population_txtfield.setDocument(new IntDocument(5));
+        swab_txtfield.setDocument(new DoubleDocument(8));
+        meetings_txtfield.setDocument(new DoubleDocument(8));
+        resources_txtfield.setDocument(new IntDocument(8));
     }
 
     private void createRightPanel(JFrame f) {
@@ -118,16 +120,11 @@ public class GUI extends JPanel {
         right_p.add(stop_p);
         stop.setVisible(false);
 
-        fps_slider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent changeEvent) {
-                fpsSliderEvent();
-            }
-        });
+        fps_slider.addChangeListener(e->fpsSliderEvent());
 
         play.addActionListener(e->play());
 
-        stop.addActionListener(e ->stop());
+        stop.addActionListener(e->stop());
     }
 
     private void createCenterPanel(JFrame f) {
@@ -344,15 +341,15 @@ public class GUI extends JPanel {
         String ending = "";
         int type = JOptionPane.INFORMATION_MESSAGE;
         switch (outcome) {
-            case Won:
+            case WON:
                 ending = "The virus has been eradicated!";
                 type = JOptionPane.INFORMATION_MESSAGE;
                 break;
-            case Dead:
+            case DEAD:
                 ending = "Unfortunately everyone died..";
                 type = JOptionPane.ERROR_MESSAGE;
                 break;
-            case No_Money:
+            case NO_MONEY:
                 ending = "The economy collapsed...";
                 type = JOptionPane.ERROR_MESSAGE;
                 break;
@@ -437,6 +434,7 @@ public class GUI extends JPanel {
         play.setText("PLAY");
         manager.destroy();
         resetBar();
+        updateStats();
         stop.setVisible(false);
         once = false;
         fps_slider.setEnabled(true);

@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 public class QuadTree {
-    static final int maxSize = 2;
+    static final int maxSize = 4;
     static final int maxSubdivision = 10;
     public QuadTree[] children;
     public ArrayList<Person> people = new ArrayList<>();

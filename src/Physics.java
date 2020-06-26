@@ -44,30 +44,11 @@ public class Physics {
         }
     }
 
-    private void updateQuadTree() {
-        quadTree.clear();
-        for (int i = 0; i < manager.people.length; i++) {
-            quadTree.insert(manager.people[i]);
-        }
-        findNearPlayers();
-    }
-
-
-    private void findNearPlayers() {
-        ArrayList<Person> returnObjects = new ArrayList();
-        HashMap<Person, Boolean> alreadyCalculated = new HashMap();
-        for (int i = 0; i < manager.people.length; i++) {
-            returnObjects.clear();
-            quadTree.retrieve(returnObjects, manager.people[i]);
-            checkCollision(manager.people[i], returnObjects, alreadyCalculated);
-        }
-    }
-
     private void checkCollisionQuadratic() {
         for (int i = 0; i < manager.people.length; i++) {
             //check with other players
             for (int j = i + 1; j < manager.people.length; j++) {
-                if(manager.people[i].condition== Status.black||manager.people[j].condition== Status.black) continue;
+                if(manager.people[i].condition == Status.BLACK || manager.people[j].condition == Status.BLACK) continue;
                 double distance = Math.sqrt(Math.pow(manager.people[i].x - manager.people[j].x, 2) + Math.pow(manager.people[i].y - manager.people[j].y, 2));
                 if (distance <= Person.r * 2) {
                     manager.people[i].meeting(manager.people[j]);
@@ -93,10 +74,28 @@ public class Physics {
         }
     }
 
+    private void updateQuadTree() {
+        quadTree.clear();
+        for (int i = 0; i < manager.people.length; i++) {
+            quadTree.insert(manager.people[i]);
+        }
+        findNearPlayers();
+    }
+
+    private void findNearPlayers() {
+        ArrayList<Person> returnObjects = new ArrayList();
+        HashMap<Person, Boolean> alreadyCalculated = new HashMap();
+        for (int i = 0; i < manager.people.length; i++) {
+            returnObjects.clear();
+            quadTree.retrieve(returnObjects, manager.people[i]);
+            checkCollision(manager.people[i], returnObjects, alreadyCalculated);
+        }
+    }
+
     private void checkCollision(Person person, ArrayList<Person> otherPeople, HashMap<Person, Boolean> alreadyCalculated) {
         for (int i = 0; i < otherPeople.size(); i++) {
             if(person==otherPeople.get(i) || alreadyCalculated.containsKey(otherPeople.get(i))) continue;
-            if(person.condition== Status.black||otherPeople.get(i).condition== Status.black) continue;
+            if(person.condition== Status.BLACK ||otherPeople.get(i).condition== Status.BLACK) continue;
             double distance = Math.sqrt(Math.pow(person.x - otherPeople.get(i).x, 2) + Math.pow(person.y - otherPeople.get(i).y, 2));
             if (distance <= Person.r * 2) {
                 alreadyCalculated.put(person, true);

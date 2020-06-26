@@ -1,1 +1,1 @@
-public enum Status {green, yellow, blue, red, black}
+public enum Status {BLUE, GREEN, YELLOW, RED, BLACK}

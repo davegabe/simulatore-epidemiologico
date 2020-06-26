@@ -24,7 +24,7 @@ public class Manager {
     private GUI gui;
     private Strategy chosenStrategy;
     private boolean isStrategyStarted;
-    private boolean doStrategy;
+    private boolean alreadyDone;
     private int height;
 
     public static void main(String[] args) {
@@ -56,7 +56,7 @@ public class Manager {
         this.meetings = meetings;
         this.resources = resources;
         isStrategyStarted = false;
-        doStrategy = true;
+        alreadyDone = false;
         day = 0;
         gui.updateStats();
 
@@ -92,7 +92,7 @@ public class Manager {
         walls[2] = new Wall(width - Wall.border, 0, Wall.border, height);   //right
         walls[3] = new Wall(0, height - Wall.border, width, Wall.border);   //bottom
 
-        physics = new Physics(this, 0, width, 0, height);
+        physics = new Physics(this,  width, height);
         twoDPart.initialize();
         dailyGraph.initialize();
     }
@@ -120,26 +120,27 @@ public class Manager {
         Vd = 0;
         int lastBlack = -1;
         for (int i = 0; i < people.length; i++) {
-            switch (people[i].dayEvent()) {
-                case green:
+            people[i].dayEvent();
+            switch (people[i].condition) {
+                case GREEN:
                     num_green++;
                     Vd += people[i].Vd;
                     break;
-                case yellow:
+                case YELLOW:
                     num_yellow++;
                     Vd += people[i].Vd;
                     break;
-                case red:
+                case RED:
                     num_red++;
                     resources-=3*swabCost;
                     isStrategyStarted = true;
                     Vd += people[i].Vd;
                     break;
-                case blue:
+                case BLUE:
                     num_blue++;
                     Vd += people[i].Vd;
                     break;
-                case black:
+                case BLACK:
                     //order array so dead people are on top of array
                     if (num_green == 0 && num_yellow == 0 && num_red == 0 && num_blue == 0) {
                         lastBlack = i;
@@ -164,20 +165,19 @@ public class Manager {
             //part of strategy
             if(isStrategyStarted){
                 if(chosenStrategy==Strategy.LAZARETTO){
-                    if(people[i].condition== Status.red && people[i].y<=height){
+                    if(people[i].condition == Status.RED && people[i].y<=height){
                         people[i].y = (int)(height + Wall.border + Person.r*2 + Math.random()*height*0.1);
                     }
-                    if(people[i].condition == Status.blue && people[i].y>=height){
-                        people[i].y = (int)(Math.random()*height*0.8) + Wall.border + Person.r*2;
+                    if(people[i].condition == Status.BLUE && people[i].y>=height){
+                        people[i].y = (int)(Math.random()*height*0.7) + Wall.border + Person.r*2;
                     }
                 }
 
                 if(chosenStrategy==Strategy.SMART_SWAB){
-                    if(people[i].condition== Status.red){
-                        people[i].contacts.forEach((day, contactList)->{
-                            contactList.forEach((person -> {
-                                person.doSwab();
-                            }));
+                    if(people[i].condition == Status.RED && !people[i].checkedContacts) {
+                        people[i].checkedContacts=true;
+                        people[i].contacts.forEach((day, contactList)-> {
+                            contactList.forEach((person ->  person.doSwab()));
                         });
                     }
                 }
@@ -187,25 +187,24 @@ public class Manager {
         gui.recreateBar();
         twoDPart.repaint();
         twoDPart.resetCounter();
-        dailyGraph.addDay();
+        dailyGraph.addNewDay();
         if (num_black == people.length) {
             Vd=0;
             gui.updateStats();
-            gui.OutcomeDialog(Outcomes.Dead);
+            gui.OutcomeDialog(Outcomes.DEAD);
             return;
         }
         if (resources <= 0) {
             Vd=Vd/(people.length-num_black);
             gui.updateStats();
-            gui.OutcomeDialog(Outcomes.No_Money);
+            gui.OutcomeDialog(Outcomes.NO_MONEY);
             return;
         }
         Vd=Vd/(people.length-num_black);
-        gui.updateStats();
         R0=Vd*duration*infectivity;
+        gui.updateStats();
         if (num_red+num_yellow==0){
-            gui.OutcomeDialog(Outcomes.Won);
-            destroy();
+            gui.OutcomeDialog(Outcomes.WON);
             return;
         }
         if (isStrategyStarted) {
@@ -213,7 +212,7 @@ public class Manager {
                 case PRAY:
                     break;
                 case HALF_RANDOM:
-                    if(doStrategy)
+                    if(!alreadyDone)
                         halfRandom();
                     break;
                 case RANDOM_SWAB:
@@ -227,14 +226,13 @@ public class Manager {
         int i=0;
         while (i<(int)(Math.random()*people.length/2)){
             int temp = (int)(Math.random()*(people.length-1));
-            if(!people[temp].swabResult && (people[temp].condition == Status.yellow || people[temp].condition== Status.green)){
+            if(!people[temp].swabResult && (people[temp].condition == Status.YELLOW || people[temp].condition== Status.GREEN)){
                 if(people[temp].doSwab()){
                     people[temp].stopMovement();
                 }
             }
             i++;
         }
-        doStrategy = false;
     }
 
     private void halfRandom() {
@@ -246,8 +244,6 @@ public class Manager {
                 i++;
             }
         }
-        doStrategy = false;
+        alreadyDone = false;
     }
-
-
 }

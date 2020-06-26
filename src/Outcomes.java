@@ -1,1 +1,1 @@
-public enum Outcomes {Won, Dead, No_Money}
+public enum Outcomes {WON, DEAD, NO_MONEY}
