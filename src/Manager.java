@@ -8,7 +8,6 @@ public class Manager {
     public Wall[] walls;
     public Physics physics;
     public TwoDPart twoDPart;
-    public DailyGraph dailyGraph;
     public float meetings;
     public int movingDuringDay;
     public int day = 0;
@@ -33,7 +32,6 @@ public class Manager {
 
     public void start() {
         twoDPart = new TwoDPart(this);
-        dailyGraph = new DailyGraph(this);
         gui = new GUI(this);
         gui.initialize();
     }
@@ -92,9 +90,8 @@ public class Manager {
         walls[2] = new Wall(width - Wall.border, 0, Wall.border, height);   //right
         walls[3] = new Wall(0, height - Wall.border, width, Wall.border);   //bottom
 
-        physics = new Physics(this,  width, height);
+        physics = new Physics(this);
         twoDPart.initialize();
-        dailyGraph.initialize();
     }
 
     public void changeSpeed(int tick) {
@@ -187,7 +184,6 @@ public class Manager {
         gui.recreateBar();
         twoDPart.repaint();
         twoDPart.resetCounter();
-        dailyGraph.addNewDay();
         if (num_black == people.length) {
             Vd=0;
             gui.updateStats();
@@ -244,6 +240,6 @@ public class Manager {
                 i++;
             }
         }
-        alreadyDone = false;
+        alreadyDone = true;
     }
 }

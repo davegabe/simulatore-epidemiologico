@@ -1,34 +1,15 @@
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Physics {
-    private int x1, x2, y1, y2;
     private Manager manager;
-    private QuadTree quadTree;
     private int collisionCounter=0;
 
-    Physics(Manager manager, int x1, int x2, int y1, int y2) {
+    Physics(Manager manager) {
         this.manager = manager;
-        this.x1 = x1;
-        this.x2 = x2;
-        this.y1 = y1;
-        this.y2 = y2;
-        quadTree = new QuadTree(x1, x2, y1, y2, -1);
-    }
-
-    Physics(Manager manager, int w, int h) {
-        this.manager = manager;
-        this.x1 = 0;
-        this.x2 = w;
-        this.y1 = 0;
-        this.y2 = h;
-        quadTree = new QuadTree(x1, x2, y1, y2, -1);
     }
 
     public void update() {
         movePlayers();
-        //updateQuadTree();
         checkCollisionQuadratic();
         checkWalls();
         moveBackPlayers();
@@ -69,53 +50,6 @@ public class Physics {
                         manager.people[i].dir.speedX = tempSpeedX;
                         manager.people[i].dir.speedY = tempSpeedY;
                     }
-                }
-            }
-        }
-    }
-
-    private void updateQuadTree() {
-        quadTree.clear();
-        for (int i = 0; i < manager.people.length; i++) {
-            quadTree.insert(manager.people[i]);
-        }
-        findNearPlayers();
-    }
-
-    private void findNearPlayers() {
-        ArrayList<Person> returnObjects = new ArrayList();
-        HashMap<Person, Boolean> alreadyCalculated = new HashMap();
-        for (int i = 0; i < manager.people.length; i++) {
-            returnObjects.clear();
-            quadTree.retrieve(returnObjects, manager.people[i]);
-            checkCollision(manager.people[i], returnObjects, alreadyCalculated);
-        }
-    }
-
-    private void checkCollision(Person person, ArrayList<Person> otherPeople, HashMap<Person, Boolean> alreadyCalculated) {
-        for (int i = 0; i < otherPeople.size(); i++) {
-            if(person==otherPeople.get(i) || alreadyCalculated.containsKey(otherPeople.get(i))) continue;
-            if(person.condition== Status.BLACK ||otherPeople.get(i).condition== Status.BLACK) continue;
-            double distance = Math.sqrt(Math.pow(person.x - otherPeople.get(i).x, 2) + Math.pow(person.y - otherPeople.get(i).y, 2));
-            if (distance <= Person.r * 2) {
-                alreadyCalculated.put(person, true);
-                person.meeting(otherPeople.get(i));
-                otherPeople.get(i).meeting(person);
-                collisionCounter+=2;
-
-                if(!person.mobility){
-                    otherPeople.get(i).dir.speedX *= -1;
-                    otherPeople.get(i).dir.speedY *= -1;
-                } else if(!otherPeople.get(i).mobility){
-                    person.dir.speedX *= -1;
-                    person.dir.speedY *= -1;
-                } else {
-                    int tempSpeedX = otherPeople.get(i).dir.speedX;
-                    int tempSpeedY = otherPeople.get(i).dir.speedY;
-                    otherPeople.get(i).dir.speedX = person.dir.speedX;
-                    otherPeople.get(i).dir.speedY = person.dir.speedY;
-                    person.dir.speedX = tempSpeedX;
-                    person.dir.speedY = tempSpeedY;
                 }
             }
         }

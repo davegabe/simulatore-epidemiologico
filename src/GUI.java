@@ -53,19 +53,13 @@ public class GUI extends JPanel {
         f.add(left_p, BorderLayout.WEST);
         c = new GridBagConstraints();
 
-        population_txtfield = createTextField("Popolazione", left_p);   // Inserting POPOLAZIONE FIELD
-        resources_txtfield = createTextField("Risorse", left_p);        // Inserting RISORSE FIELD
-        swab_txtfield = createTextField("Costo cure", left_p);          // Inserting TAMPONE FIELD
-        meetings_txtfield = createTextField("Incontri", left_p);        // Inserting INCONTRI FIELD
-        strategy_cmbx = createComboBox("Strategia", left_p);            // Inserting STRATEGY JCOMBOBOX
+        population_txtfield = createTextField("Population", left_p);   // Inserting POPOLAZIONE FIELD
+        resources_txtfield = createTextField("Resources", left_p);        // Inserting RISORSE FIELD
+        swab_txtfield = createTextField("Cost of treatment", left_p);          // Inserting TAMPONE FIELD
+        meetings_txtfield = createTextField("Meetings", left_p);        // Inserting INCONTRI FIELD
+        strategy_cmbx = createComboBox("Strategy", left_p);            // Inserting STRATEGY JCOMBOBOX
 
         left_p.add(Box.createRigidArea(new Dimension(0, 120)));  // SPAZIO CHE DIVIDE SLIDER DA BOTTONI
-
-        //left_p.add(manager.dailyGraph);
-        JFrame newroba = new JFrame();
-        newroba.add(manager.dailyGraph);
-        newroba.setVisible(true);
-        newroba.setSize(500,500);
 
         left_p.add(createStats(left_p, manager.day, manager.Vd, manager.resources));                 // instead of days_value, we should put the manager's days counter
 
@@ -84,15 +78,15 @@ public class GUI extends JPanel {
         f.add(right_p, BorderLayout.EAST);
 
         // INSERIMENTO SLIDER INFETTIVITÁ
-        inf_slider = createSlider("          Infettività", right_p, ColorsManager.yellow, 10, 20, 100, 0);
+        inf_slider = createSlider("          Infectivity", right_p, ColorsManager.yellow, 10, 20, 100, 0);
         // INSERIMENTO SLIDER SINTOMATICITÀ
-        sint_slider = createSlider("          Sintomaticità", right_p, ColorsManager.red, 10, 20, 100, 0);
+        sint_slider = createSlider("          Symptomaticity ", right_p, ColorsManager.red, 10, 20, 100, 0);
         // INSERIMENTO SLIDER LETALITÀ
-        let_slider = createSlider("          Letalità", right_p, ColorsManager.black, 10, 20, 100, 0);
+        let_slider = createSlider("          Letality", right_p, ColorsManager.black, 10, 20, 100, 0);
         // INSERIMENTO SLIDER DURATA
-        duration_slider = createSlider("          Durata", right_p, ColorsManager.background, 5, 15, 45, 0);
+        duration_slider = createSlider("          Duration", right_p, ColorsManager.background, 5, 15, 45, 0);
         // INSERIMENTO SLIDER VELOCITÀ
-        fps_slider = createSlider("          Velocità", right_p, ColorsManager.blue, 10, 20, 100, 0);
+        fps_slider = createSlider("          Speed", right_p, ColorsManager.blue, 10, 20, 100, 0);
         //30 max, 2000 min
 
         right_p.add(Box.createRigidArea(new Dimension(0, 120)));   // SPAZIO CHE DIVIDE SLIDER DA BOTTONI
