@@ -2,22 +2,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Person {
-    static final int rMax = 12;
-    static final int rMin = 3;
+    static final int rMax = 12, rMin = 3;
     static int r = rMax;
     public Status condition = Status.GREEN;
-    public boolean hasVirus;
-    public boolean mobility = true;
-    public int x;
-    public int y;
+    public boolean hasVirus = false, mobility = true;
+    public int x, y;
     public Vector2 dir;
     private Manager manager;
     public HashMap<Integer ,ArrayList<Person>> contacts = new HashMap();
-    private int prevX;
-    private int prevY;
-    private int infectedDays;
-    private int symptomsDay;
-    private int deathDay;
+    private int prevX, prevY;
+    private int infectedDays, symptomsDay, deathDay;
     public boolean swabResult = false;
     public int Vd;
     public boolean checkedContacts=false;
@@ -122,10 +116,10 @@ public class Person {
     }
 
     private void turningBlack() {
-        if(infectedDays>manager.duration){ //if the sickness time is over
+        if(infectedDays>manager.duration){  //if the sickness time is over
             turningBlue();
         }
-        if(infectedDays==deathDay) { //if today is the day
+        if(infectedDays==deathDay) {        //if today is the day
             condition = Status.BLACK;
         }
     }
@@ -144,12 +138,12 @@ public class Person {
 
     public void stopMovement(){
         mobility=false;
-        dir = new Vector2(0,0);//
+        dir = new Vector2(0,0);
     }
 
     public void startMovement(){
         mobility=true;
-        if(dir.speedX==0 && dir.speedY==0)//
+        if(dir.speedX==0 && dir.speedY==0)
             dir = new Vector2();
     }
 

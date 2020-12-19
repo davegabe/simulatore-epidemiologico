@@ -4,7 +4,6 @@ import javax.swing.text.PlainDocument;
 import java.awt.*;
 
 public class DoubleDocument extends PlainDocument {
-
     int size;
 
     public DoubleDocument(int size) {

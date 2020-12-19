@@ -6,22 +6,11 @@ import static javax.swing.SwingConstants.HORIZONTAL;
 public class GUI extends JPanel {
     private final int CONSTANT_RESOURCES = 100000;
     private GridBagConstraints c;
-    private JTextField population_txtfield;
-    private JTextField swab_txtfield;
-    private JTextField meetings_txtfield;
-    private JTextField resources_txtfield;
-    private JSlider inf_slider;
-    private JSlider let_slider;
-    private JSlider sint_slider;
-    private JSlider duration_slider;
-    private JSlider fps_slider;
-    private JPanel center;
-    private JLabel counterDays;
-    private JLabel counterResources;
-    private JLabel counterVd;
-    private JPanel bar;
-    private JButton play;
-    private JButton stop;
+    private JTextField population_txtfield, swab_txtfield, meetings_txtfield, resources_txtfield;
+    private JSlider inf_slider, let_slider, sint_slider, duration_slider, fps_slider;
+    private JPanel center, bar;
+    private JLabel counterDays, counterResources, counterVd;
+    private JButton play, stop;
     private JComboBox strategy_cmbx;
     private boolean once = false;
     private Manager manager;
@@ -32,7 +21,7 @@ public class GUI extends JPanel {
 
     public void initialize() {
         JFrame f = new JFrame("COVID-2027 GVNG");
-        f.setSize(1500, 900);
+        f.setMinimumSize(new Dimension(1500, 900));
         f.setLayout(new BorderLayout());
         f.getContentPane().setBackground(ColorsManager.background);
 
@@ -43,7 +32,6 @@ public class GUI extends JPanel {
         f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         f.setVisible(true);
         f.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        System.out.print(manager.twoDPart.getSize());
     }
 
     private void createLeftPanel(JFrame f) {
@@ -53,15 +41,15 @@ public class GUI extends JPanel {
         f.add(left_p, BorderLayout.WEST);
         c = new GridBagConstraints();
 
-        population_txtfield = createTextField("Population", left_p);   // Inserting POPOLAZIONE FIELD
-        resources_txtfield = createTextField("Resources", left_p);        // Inserting RISORSE FIELD
-        swab_txtfield = createTextField("Cost of treatment", left_p);          // Inserting TAMPONE FIELD
+        population_txtfield = createTextField("Population", left_p);    // Inserting POPOLAZIONE FIELD
+        resources_txtfield = createTextField("Resources", left_p);      // Inserting RISORSE FIELD
+        swab_txtfield = createTextField("Cost of treatment", left_p);   // Inserting TAMPONE FIELD
         meetings_txtfield = createTextField("Meetings", left_p);        // Inserting INCONTRI FIELD
-        strategy_cmbx = createComboBox("Strategy", left_p);            // Inserting STRATEGY JCOMBOBOX
+        strategy_cmbx = createComboBox("Strategy", left_p);             // Inserting STRATEGY JCOMBOBOX
 
-        left_p.add(Box.createRigidArea(new Dimension(0, 120)));  // SPAZIO CHE DIVIDE SLIDER DA BOTTONI
+        left_p.add(Box.createRigidArea(new Dimension(0, 120)));  //SPACE IN BETWEEN
 
-        left_p.add(createStats(left_p, manager.day, manager.Vd, manager.resources));                 // instead of days_value, we should put the manager's days counter
+        left_p.add(createStats(left_p, manager.day, manager.Vd, manager.resources));
 
         left_p.add(Box.createRigidArea(new Dimension(0, 120)));
 
@@ -77,19 +65,15 @@ public class GUI extends JPanel {
         right_p.setLayout(new BoxLayout(right_p, BoxLayout.Y_AXIS));
         f.add(right_p, BorderLayout.EAST);
 
-        // INSERIMENTO SLIDER INFETTIVITÁ
-        inf_slider = createSlider("          Infectivity", right_p, ColorsManager.yellow, 10, 20, 100, 0);
-        // INSERIMENTO SLIDER SINTOMATICITÀ
-        sint_slider = createSlider("          Symptomaticity ", right_p, ColorsManager.red, 10, 20, 100, 0);
-        // INSERIMENTO SLIDER LETALITÀ
-        let_slider = createSlider("          Letality", right_p, ColorsManager.black, 10, 20, 100, 0);
-        // INSERIMENTO SLIDER DURATA
-        duration_slider = createSlider("          Duration", right_p, ColorsManager.background, 5, 15, 45, 0);
-        // INSERIMENTO SLIDER VELOCITÀ
-        fps_slider = createSlider("          Speed", right_p, ColorsManager.blue, 10, 20, 100, 0);
-        //30 max, 2000 min
+        //INSERT SLIDERS
+        inf_slider =        createSlider("          Infectivity", right_p, ColorsManager.yellow, 10, 20, 100, 0);
+        sint_slider =       createSlider("          Symptomaticity ", right_p, ColorsManager.red, 10, 20, 100, 0);
+        let_slider =        createSlider("          Letality", right_p, ColorsManager.black, 10, 20, 100, 0);
+        duration_slider =   createSlider("          Duration", right_p, ColorsManager.background, 5, 15, 45, 0);
+        fps_slider =        createSlider("          Speed", right_p, ColorsManager.blue, 10, 20, 100, 0); //30 max, 2000 min
 
-        right_p.add(Box.createRigidArea(new Dimension(0, 120)));   // SPAZIO CHE DIVIDE SLIDER DA BOTTONI
+
+        right_p.add(Box.createRigidArea(new Dimension(0, 120)));   //SPACE IN BETWEEN
 
         JPanel play_p = new JPanel();
 
@@ -103,7 +87,7 @@ public class GUI extends JPanel {
         play_p.add(play);
         right_p.add(play_p);
 
-        right_p.add(Box.createRigidArea(new Dimension(0, 0)));   // SPAZIO CHE DIVIDE SLIDER DA BOTTONI
+        right_p.add(Box.createRigidArea(new Dimension(0, 0)));   //SPACE IN BETWEEN
 
         JPanel stop_p = new JPanel();
         stop_p.setBackground(ColorsManager.green);
@@ -114,26 +98,22 @@ public class GUI extends JPanel {
         right_p.add(stop_p);
         stop.setVisible(false);
 
-        fps_slider.addChangeListener(e->fpsSliderEvent());
+        fps_slider.addChangeListener(e -> fpsSliderEvent());
 
-        play.addActionListener(e->play());
+        play.addActionListener(e -> play());
 
-        stop.addActionListener(e->stop());
+        stop.addActionListener(e -> stop());
     }
 
     private void createCenterPanel(JFrame f) {
-
         // CREATE CENTER LAYOUT AS BORDERLAYOUT
-
         center = new JPanel();
         center.setLayout(new BorderLayout());
         center.setBackground(ColorsManager.background);
         f.add(center, BorderLayout.CENTER);
 
-
-        // INSERIMENTO PARTE 2D AL CENTRO DEL FRAME
+        //INSERT 2D PART AT CENTER
         center.add(manager.twoDPart, BorderLayout.CENTER);
-
 
         // SIZE CHANGING BAR
         createBar();
@@ -158,9 +138,7 @@ public class GUI extends JPanel {
         jSlider.setPaintTicks(true);
         jSlider.setPaintLabels(true);
 
-        //inf_slider.setBackground(new java.awt.Color(231, 111, 81));
         jSlider.setForeground(color);
-
 
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
@@ -189,7 +167,7 @@ public class GUI extends JPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
         c.gridy = 1;
-        c.insets = new Insets(8, 40, 0, 30);         // inserisce uno spazio tra gli elementi
+        c.insets = new Insets(8, 40, 0, 30);    //SPACE IN BETWEEN
         jPanel.add(jTextField, c);
         return jTextField;
     }
@@ -213,7 +191,7 @@ public class GUI extends JPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
         c.gridy = 1;
-        c.insets = new Insets(8, 40, 0, 30);         // inserisce uno spazio tra gli elementi
+        c.insets = new Insets(8, 40, 0, 30);    //SPACE IN BETWEEN
         jPanel.add(jComboBox, c);
         return jComboBox;
     }

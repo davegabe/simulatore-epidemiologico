@@ -4,7 +4,6 @@ import javax.swing.text.PlainDocument;
 import java.awt.*;
 
 public class IntDocument extends PlainDocument {
-
     int size;
 
     public IntDocument(int size){

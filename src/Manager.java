@@ -1,29 +1,19 @@
 public class Manager {
     final static int MAX_PEOPLE = 5000;
-    public int duration;
-    public int infectivity;
-    public int symptomaticQuality;
-    public int letality;
     public Person[] people;
     public Wall[] walls;
     public Physics physics;
     public TwoDPart twoDPart;
+    private GUI gui;
+    public int duration, infectivity, symptomaticQuality, letality, movingDuringDay;
     public float meetings;
-    public int movingDuringDay;
     public int day = 0;
-    public float Vd = 0;
-    public float R0;
-    public int num_green;
-    public int num_yellow;
-    public int num_red;
-    public int num_blue;
-    public int num_black;
+    public float Vd = 0, R0;
+    public int num_green, num_yellow, num_red, num_blue, num_black;
     public int resources = 0;
     public float swabCost;
-    private GUI gui;
     private Strategy chosenStrategy;
-    private boolean isStrategyStarted;
-    private boolean alreadyDone;
+    private boolean isStrategyStarted, halfAlreadyPicked;
     private int height;
 
     public static void main(String[] args) {
@@ -54,7 +44,7 @@ public class Manager {
         this.meetings = meetings;
         this.resources = resources;
         isStrategyStarted = false;
-        alreadyDone = false;
+        halfAlreadyPicked = false;
         day = 0;
         gui.updateStats();
 
@@ -138,7 +128,7 @@ public class Manager {
                     Vd += people[i].Vd;
                     break;
                 case BLACK:
-                    //order array so dead people are on top of array
+                    //order array so dead people are on top of array (useful for drawing)
                     if (num_green == 0 && num_yellow == 0 && num_red == 0 && num_blue == 0) {
                         lastBlack = i;
                     } else {
@@ -208,7 +198,7 @@ public class Manager {
                 case PRAY:
                     break;
                 case HALF_RANDOM:
-                    if(!alreadyDone)
+                    if(!halfAlreadyPicked)
                         halfRandom();
                     break;
                 case RANDOM_SWAB:
@@ -240,6 +230,6 @@ public class Manager {
                 i++;
             }
         }
-        alreadyDone = true;
+        halfAlreadyPicked = true;
     }
 }
